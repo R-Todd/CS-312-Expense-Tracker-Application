@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+
+    container_name: expense-server
+
+    # Map host port 5000 to container port 5000
+    ports:
+      - "5000:5000"
+
+    # Load environment variables from server/.env
+    env_file:
+      - ./.env
+
+    # Bind mount the server source code for live reload
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+
+    # Use the dev command (nodemon)
+    command: ["npm", "run", "dev"]
+
+    # Restart policy for convenience
+    restart: unless-stopped

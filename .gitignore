@@ -1,0 +1,16 @@
+# Node
+node_modules/
+npm-debug.log
+
+# React
+client/node_modules/
+client/build/
+
+# Environment variables
+*.env
+
+# Postgres
+pgdata/
+
+# vscode settings
+.vscode/
