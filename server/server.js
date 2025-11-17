@@ -21,8 +21,10 @@ app.use(cors());
 // Parse incoming JSON request bodies
 app.use(express.json());
 
-
 // ================== ROUTES ==================
+// Authentication routes
+app.use('/api/auth', require('./routes/auth'));
+
 
 // Root route - Returns a simple message to confirm API is running
 app.get("/", (req, res) => {

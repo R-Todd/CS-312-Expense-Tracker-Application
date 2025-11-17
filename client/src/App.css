@@ -36,3 +36,33 @@
     transform: rotate(360deg);
   }
 }
+
+/* Authentication styles for client/src/App.css */
+
+.App-nav {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 1rem;
+  background-color: #333;
+}
+
+.App-nav-link {
+  color: white;
+  margin: 0 1rem;
+  text-decoration: none;
+}
+
+.App-nav-link:hover {
+  text-decoration: underline;
+}
+
+/* Style for the logout button */
+.App-nav button {
+  background: #61dafb;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
