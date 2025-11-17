@@ -1,92 +1,116 @@
-Getting Started on a New Machine
+# Getting Started on a New Machine
 
-1. Prerequisites  
+## 1. Prerequisites
 Make sure the machine has:
 
-- Docker Desktop  
+- **Docker Desktop**  
   Download: https://www.docker.com/products/docker-desktop/
 
 Nothing else is required — no local Node.js installation needed.
 
 ---
 
-2. Create a .env File  
-Create a `.env` file in the project root:
+## 2. Create a .env File
+Create a `.env` file in the project's root directory. You can copy the example file:
 
-Fill out `.env.example` with your credentials
+```bash
+.env.example
+```
+
+Fill out the new `.env` file with your credentials, especially:
+- POSTGRES_USER  
+- POSTGRES_PASSWORD  
+- POSTGRES_DB  
+- JWT_SECRET  
 
 ---
 
-3. Build and Run the Server (Docker)  
+## 3. Build and Run the Server (Docker)
+
 From the project root:
 
-**docker compose up --build**
+```bash
+docker-compose up -d --build
+```
 
 This will:
 
-- Build the server container using server/Dockerfile
-- Install dependencies using npm install inside the container
-- Start the server using nodemon
-- Hot-reload when you edit server files locally
-
-Once running, you should see:
-
-Server is running on port 5000  
-http://localhost:5000
+- Build the server and client containers using their Dockerfiles  
+- Install all dependencies inside the containers  
+- Start the server, client, and database in detached mode  
 
 ---
 
-4. Stop and Clean Containers  
+## 4. Initialize the Database (One-Time Setup)
+This must be done **after your containers are running** (after Step 3) but **before registering a user**.  
+This creates all required tables.
 
-To stop:
 
-**docker compose down**
+1) Open a new terminal.
 
-To stop and remove all volumes (fresh start):
+Connect to the running PostgreSQL container using this command:
 
-**docker compose down -v**
+```bash
+docker-compose exec db psql -U POSTGRES_USER -d POSTGRES_DB
+```
+(Use the POSTGRES_USER and POSTGRES_DB values from your .env file).
 
----
+Once you're inside the psql shell, paste the following SQL code and press Enter:
 
-5. Test the API  
+SQL:
 
-Open browser or Postman and test:
-
-http://localhost:5000/
-
-Expected:
-
-Expense Tracker API is running
-
-Test sample expenses endpoint:
-
-http://localhost:5000/api/expenses
-
-You will see the placeholder JSON response.
-
----
-
-6. Development Notes  
-
-Auto-reload  
-Nodemon runs inside the container, so any file changes in /server trigger a restart.
-
-Node modules  
-The Docker volume prevents host node_modules from interfering with container node_modules.
-
-Never commit .env  
-Your .gitignore correctly prevents environment variables from being exposed.
+```sql
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+You should see CREATE TABLE. Type \q and press Enter to quit the psql shell.
 
 ---
 
-7. Running After Changing Repositories  
+## 5. Test the API & App
 
-If you clone this repo on a brand-new system:
+Your containers should now be running:
 
-**docker compose down -v**
+- **Client App:** http://localhost:3000  
+  Register and log in here.
 
-to rebuild:
+- **Server API:** http://localhost:5000  
+  Should show: *Expense Tracker API is running*
 
-**docker compose up --build**
+You can now create your first user.
 
-This ensures Docker rebuilds everything cleanly.
+---
+
+## 6. Stop and Clean Containers
+
+Stop everything:
+
+```bash
+docker-compose down
+```
+
+Stop and **delete all data** (including database):
+
+```bash
+docker-compose down -v
+```
+
+---
+
+## Development Notes
+
+- **Auto-reload:**  
+  Nodemon (server) and React dev server (client) automatically reload when editing files inside `/server` or `/client`.
+
+- **Node modules isolation:**  
+  Docker volumes prevent conflicts between host and container node_modules.
+
+- **Never commit `.env`:**  
+  Your `.gitignore` correctly prevents exposing secrets.
+
