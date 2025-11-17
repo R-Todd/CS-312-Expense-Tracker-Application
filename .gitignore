@@ -1,16 +1,80 @@
-# Node
+# ============================================================
+# Node / Server
+# ============================================================
 node_modules/
-npm-debug.log
+server/node_modules/
 
-# React
+# Prevent lockfile issues across OS/machine differences
+package-lock.json
+
+# Build outputs (if you add them later)
+dist/
+build/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+# ============================================================
+# Environment Variables
+# ============================================================
+.env
+.env.*       # includes .env.local, .env.test, etc
+server/.env
+client/.env
+
+
+# ============================================================
+# Docker Related
+# ============================================================
+# Docker internal volumes and persistent bind-mounts
+docker-volume/
+docker-data/
+docker/
+docker-compose.override.yml
+
+# Ignore any container-generated folders
+**/.docker/
+**/docker-data/
+**/postgres_data/
+**/data/
+
+
+# ============================================================
+# Client (React — if later used)
+# ============================================================
 client/node_modules/
 client/build/
+client/.cache/
 
-# Environment variables
-*.env
 
-# Postgres
-pgdata/
-
-# vscode settings
+# ============================================================
+# OS / Editor Files
+# ============================================================
 .vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+
+
+# ============================================================
+# Database Dumps / Backups
+# ============================================================
+*.sql
+*.dump
+*.bak
+
+
+# ============================================================
+# Temporary & Uploads
+# ============================================================
+tmp/
+temp/
+uploads/

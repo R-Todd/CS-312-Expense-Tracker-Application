@@ -1,9 +1,0 @@
-# Prevent host node_modules from being copied into the container
-node_modules
-
-# Ignore Docker config files themselves
-Dockerfile
-.dockerignore
-
-# Do NOT include .env inside the image
-.env

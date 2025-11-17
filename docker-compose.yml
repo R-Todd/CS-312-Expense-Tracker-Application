@@ -1,6 +1,8 @@
-version: "3.9"
-
 services:
+
+  # ============================================================
+  # SERVER SERVICE
+  # ============================================================
   server:
     build:
       context: ./server
@@ -8,21 +10,42 @@ services:
 
     container_name: expense-server
 
-    # Map host port 5000 to container port 5000
     ports:
       - "5000:5000"
 
-    # Load environment variables from server/.env
     env_file:
       - ./.env
 
-    # Bind mount the server source code for live reload
     volumes:
       - ./server:/usr/src/app
       - /usr/src/app/node_modules
 
-    # Use the dev command (nodemon)
+    # Start server AFTER db container starts (not db readiness)
+    depends_on:
+      - db
+
     command: ["npm", "run", "dev"]
 
-    # Restart policy for convenience
     restart: unless-stopped
+
+
+  # ============================================================
+  # DATABASE SERVICE (PostgreSQL 16)
+  # ============================================================
+  db:
+    image: postgres:16
+    container_name: expense-db
+
+    env_file:
+      - ./.env
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    ports:
+      - "5432:5432"
+
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
