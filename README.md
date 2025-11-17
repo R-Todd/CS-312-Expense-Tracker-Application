@@ -66,7 +66,7 @@ CREATE TABLE users (
 Connect to the running PostgreSQL container using this command:
 
 ```bash
-docker-compose exec db psql -U your_username -d your_database_name
+docker-compose exec db psql -U POSTGRES_USER -d POSTGRES_DB
 ```
 (Use the POSTGRES_USER and POSTGRES_DB values from your .env file).
 
