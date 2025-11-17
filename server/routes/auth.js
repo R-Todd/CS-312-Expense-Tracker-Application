@@ -6,7 +6,7 @@ const router = express.Router(); // express router for defining routes
 const pool = require("../database/database"); // Database connection pool
 
 // Authentication libraries (bcrypt for hashing, jwt for tokens)
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 // ========================= Auth Routes =========================
@@ -25,8 +25,6 @@ const jwt = require("jsonwebtoken");
 //  - password_hash
 //  - full_name 
 // | ------------------------------- |
-
-
 router.post("/register", async (req, res) => {
     // Get user details from request body sent by client
     // Sets collected data to variables
