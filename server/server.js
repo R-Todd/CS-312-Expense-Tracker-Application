@@ -41,7 +41,7 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-// ===== SERVER STARTUP =====
+// ================== SERVER STARTUP ==================
 
 // Set port from environment variable or default to 5000
 const PORT = process.env.SERVER_PORT || 5000;
