@@ -46,21 +46,6 @@ This must be done **after your containers are running** (after Step 3) but **bef
 This creates all required tables.
 
 
-Copy the following SQL into that file:
-
-```sql
--- Create the 'users' table for storing login and profile information
-CREATE TABLE users (
-    user_id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    full_name VARCHAR(100),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-```
-
 1) Open a new terminal.
 
 Connect to the running PostgreSQL container using this command:
