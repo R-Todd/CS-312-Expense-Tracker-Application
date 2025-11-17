@@ -21,8 +21,10 @@ app.use(cors());
 // Parse incoming JSON request bodies
 app.use(express.json());
 
-
 // ================== ROUTES ==================
+// Authentication routes
+app.use('/api/auth', require('./routes/auth'));
+
 
 // Root route - Returns a simple message to confirm API is running
 app.get("/", (req, res) => {
@@ -41,7 +43,7 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-// ===== SERVER STARTUP =====
+// ================== SERVER STARTUP ==================
 
 // Set port from environment variable or default to 5000
 const PORT = process.env.SERVER_PORT || 5000;
