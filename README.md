@@ -84,6 +84,7 @@ Your .gitignore correctly prevents environment variables from being exposed.
 If you clone this repo on a brand-new system:
 
 **docker compose down -v**
+---
 **docker compose up --build**
 
 This ensures Docker rebuilds everything cleanly.
