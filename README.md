@@ -65,14 +65,16 @@ CREATE TABLE users (
 
 Connect to the running PostgreSQL container using this command:
 
-bash
-```docker-compose exec db psql -U your_username -d your_database_name```
+```bash
+docker-compose exec db psql -U your_username -d your_database_name
+```
 (Use the POSTGRES_USER and POSTGRES_DB values from your .env file).
 
 Once you're inside the psql shell, paste the following SQL code and press Enter:
 
 SQL:
 
+```sql
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -81,7 +83,7 @@ CREATE TABLE users (
     full_name VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
-
+```
 You should see CREATE TABLE. Type \q and press Enter to quit the psql shell.
 
 ---
