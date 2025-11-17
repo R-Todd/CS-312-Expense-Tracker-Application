@@ -1,92 +1,129 @@
-Getting Started on a New Machine
+# Getting Started on a New Machine
 
-1. Prerequisites  
+## 1. Prerequisites
 Make sure the machine has:
 
-- Docker Desktop  
+- **Docker Desktop**  
   Download: https://www.docker.com/products/docker-desktop/
 
 Nothing else is required — no local Node.js installation needed.
 
 ---
 
-2. Create a .env File  
-Create a `.env` file in the project root:
+## 2. Create a .env File
+Create a `.env` file in the project's root directory. You can copy the example file:
 
-Fill out `.env.example` with your credentials
+```bash
+cp .env.example .env
+```
+
+Fill out the new `.env` file with your credentials, especially:
+- POSTGRES_USER  
+- POSTGRES_PASSWORD  
+- POSTGRES_DB  
+- JWT_SECRET  
 
 ---
 
-3. Build and Run the Server (Docker)  
+## 3. Build and Run the Server (Docker)
+
 From the project root:
 
-**docker compose up --build**
+```bash
+docker-compose up -d --build
+```
 
 This will:
 
-- Build the server container using server/Dockerfile
-- Install dependencies using npm install inside the container
-- Start the server using nodemon
-- Hot-reload when you edit server files locally
-
-Once running, you should see:
-
-Server is running on port 5000  
-http://localhost:5000
+- Build the server and client containers using their Dockerfiles  
+- Install all dependencies inside the containers  
+- Start the server, client, and database in detached mode  
 
 ---
 
-4. Stop and Clean Containers  
+## 4. Initialize the Database (One-Time Setup)
+This must be done **after your containers are running** (after Step 3) but **before registering a user**.  
+This creates all required tables.
 
-To stop:
 
-**docker compose down**
+Copy the following SQL into that file:
 
-To stop and remove all volumes (fresh start):
+```sql
+-- Create the 'users' table for storing login and profile information
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
-**docker compose down -v**
+```
+
+1) Open a new terminal.
+
+Connect to the running PostgreSQL container using this command:
+
+bash
+```docker-compose exec db psql -U your_username -d your_database_name```
+(Use the POSTGRES_USER and POSTGRES_DB values from your .env file).
+
+Once you're inside the psql shell, paste the following SQL code and press Enter:
+
+SQL:
+
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+You should see CREATE TABLE. Type \q and press Enter to quit the psql shell.
 
 ---
 
-5. Test the API  
+## 5. Test the API & App
 
-Open browser or Postman and test:
+Your containers should now be running:
 
-http://localhost:5000/
+- **Client App:** http://localhost:3000  
+  Register and log in here.
 
-Expected:
+- **Server API:** http://localhost:5000  
+  Should show: *Expense Tracker API is running*
 
-Expense Tracker API is running
-
-Test sample expenses endpoint:
-
-http://localhost:5000/api/expenses
-
-You will see the placeholder JSON response.
+You can now create your first user.
 
 ---
 
-6. Development Notes  
+## 6. Stop and Clean Containers
 
-Auto-reload  
-Nodemon runs inside the container, so any file changes in /server trigger a restart.
+Stop everything:
 
-Node modules  
-The Docker volume prevents host node_modules from interfering with container node_modules.
+```bash
+docker-compose down
+```
 
-Never commit .env  
-Your .gitignore correctly prevents environment variables from being exposed.
+Stop and **delete all data** (including database):
+
+```bash
+docker-compose down -v
+```
 
 ---
 
-7. Running After Changing Repositories  
+## Development Notes
 
-If you clone this repo on a brand-new system:
+- **Auto-reload:**  
+  Nodemon (server) and React dev server (client) automatically reload when editing files inside `/server` or `/client`.
 
-**docker compose down -v**
+- **Node modules isolation:**  
+  Docker volumes prevent conflicts between host and container node_modules.
 
-to rebuild:
+- **Never commit `.env`:**  
+  Your `.gitignore` correctly prevents exposing secrets.
 
-**docker compose up --build**
-
-This ensures Docker rebuilds everything cleanly.
