@@ -3,10 +3,11 @@ import React from 'react';
 import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import './App.css'; // Make sure this is imported
 
-// Import your new components
+// =========== Import Components ===========
 import Login from './components/login';
 import Register from './components/register';
 import Dashboard from './components/dashboard';
+// =========================================
 
 function App() {
   const navigate = useNavigate();
