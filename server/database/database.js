@@ -16,10 +16,12 @@ const pool = new Pool({
 // -----------------------------------------------
 // Retry Logic for Dockerized PostgreSQL
 // -----------------------------------------------
-// When Docker Compose starts, the Node server usually boots
-// faster than the Postgres container. This can cause an
-// "ECONNREFUSED" error unless we wait for the DB to be ready.
-// connectWithRetry() attempts to connect up to 10 times.
+// connectWithRetry():
+//      - attempts to connect up to 10 times.
+//      When Docker Compose starts, 
+//      - the Node server usually boots faster than the Postgres container. 
+//      To resolve this error
+//      - we wait for the DB to be ready.
 // -----------------------------------------------
 
 async function connectWithRetry() {
