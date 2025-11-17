@@ -14,7 +14,7 @@ Nothing else is required — no local Node.js installation needed.
 Create a `.env` file in the project's root directory. You can copy the example file:
 
 ```bash
-cp .env.example .env
+.env.example
 ```
 
 Fill out the new `.env` file with your credentials, especially:
