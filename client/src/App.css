@@ -66,3 +66,37 @@
   cursor: pointer;
   font-weight: bold;
 }
+
+/* === Dashboard Styles === */
+
+/* Style for error messages */
+.error-message {
+  color: #ff6b6b; /* A lighter red for dark background */
+  font-weight: bold;
+}
+
+/* Container for the expense list */
+.expense-list {
+  list-style: none;
+  padding: 0;
+  width: 90%;
+  max-width: 600px;
+}
+
+/* Individual expense item card */
+.expense-item {
+  background-color: #3a3f4a; /* Darker card background */
+  border: 1px solid #555;
+  border-radius: 8px;
+  margin: 10px 0;
+  padding: 15px;
+  text-align: left;
+}
+
+.expense-item div {
+  margin-bottom: 8px;
+}
+
+.expense-item strong {
+  color: #61dafb; /* Use the React blue for labels */
+}
