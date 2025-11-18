@@ -100,3 +100,50 @@
 .expense-item strong {
   color: #61dafb; /* Use the React blue for labels */
 }
+
+/* === Expense Form Styles === */
+
+.expense-form {
+  background-color: #3a3f4a;
+  border-radius: 8px;
+  padding: 20px;
+  width: 90%;
+  max-width: 600px;
+  margin-bottom: 20px;
+}
+
+.expense-form h3 {
+  margin-top: 0;
+}
+
+.form-group {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.expense-form input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background-color: #282c34;
+  color: white;
+  font-size: 1rem;
+}
+
+/* Style for the submit button */
+.expense-form button {
+  background: #61dafb;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.expense-form button:hover {
+  background: #52b9d8;
+}

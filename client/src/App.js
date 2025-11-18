@@ -7,7 +7,7 @@ import './App.css'; // Make sure this is imported
 import Login from './components/login';
 import Register from './components/register';
 import Dashboard from './components/dashboard';
-// =========================================
+// ========================================
 
 function App() {
   const navigate = useNavigate();
