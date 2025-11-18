@@ -120,7 +120,7 @@ const Dashboard = () => {
         const categoryMatch = !selectedCategory || expense.category === selectedCategory;
 
         // check if month == 'all'
-        const monthMatch = selectedMonth === 'all' || new Date(expense.date).getMonth() === selectedMonth;
+        const monthMatch = selectedMonth === 'all' || new Date(expense.date).getMonth() == selectedMonth;
 
         return categoryMatch && monthMatch;
     });
