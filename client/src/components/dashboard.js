@@ -295,7 +295,7 @@ const Dashboard = () => {
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
               <option value="all">All categories</option>
-              {categoryOptions.map((c) => (
+              {categoryFilterOptions.map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>
