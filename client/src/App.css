@@ -66,3 +66,149 @@
   cursor: pointer;
   font-weight: bold;
 }
+
+/* === Dashboard Styles === */
+
+/* Style for error messages */
+.error-message {
+  color: #ff6b6b; /* A lighter red for dark background */
+  font-weight: bold;
+}
+
+/* Container for the expense list */
+.expense-list {
+  list-style: none;
+  padding: 0;
+  width: 90%;
+  max-width: 600px;
+}
+
+/* Individual expense item card */
+.expense-item {
+  background-color: #3a3f4a; /* Darker card background */
+  border: 1px solid #555;
+  border-radius: 8px;
+  margin: 10px 0;
+  padding: 15px;
+  text-align: left;
+}
+
+.expense-item div {
+  margin-bottom: 8px;
+}
+
+.expense-item strong {
+  color: #61dafb; /* Use the React blue for labels */
+}
+
+/* === Expense Form Styles === */
+
+.expense-form {
+  background-color: #3a3f4a;
+  border-radius: 8px;
+  padding: 20px;
+  width: 90%;
+  max-width: 600px;
+  margin-bottom: 20px;
+}
+
+.expense-form h3 {
+  margin-top: 0;
+}
+
+.form-group {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.expense-form input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background-color: #282c34;
+  color: white;
+  font-size: 1rem;
+}
+
+/* Style for the submit button */
+.expense-form button {
+  background: #61dafb;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.expense-form button:hover {
+  background: #52b9d8;
+}
+
+/* === Chart Styles === */
+
+.chart-container {
+  width: 90%;
+  max-width: 400px; /* Keeps the pie chart from getting too big */
+  margin: 20px auto; /* Center it */
+}
+
+/* === Summary Card Styles === */
+
+.summary-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  width: 90%;
+  max-width: 600px;
+  margin: 20px 0;
+}
+
+.summary-card {
+  background-color: #3a3f4a;
+  border-radius: 8px;
+  padding: 20px;
+  flex: 1; /* Makes all cards share the space equally */
+  text-align: center;
+}
+
+.summary-card-title {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-bottom: 8px;
+}
+
+.summary-card-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #61dafb; /* React blue */
+}
+
+/* === Filter Container Styles === */
+
+.filter-controls {
+  display: flex;
+  justify-content: space-between; /* Aligns items nicely */
+  align-items: center;
+  width: 90%;
+  max-width: 600px;
+  margin-bottom: 10px;
+}
+
+.month-filter {
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background-color: #3a3f4a; /* Dark card background */
+  color: white;
+  font-size: 1rem;
+  font-family: inherit; /* Use the app's font */
+}
+
+.month-filter option {
+  background-color: #3a3f4a;
+  color: white;
+}
