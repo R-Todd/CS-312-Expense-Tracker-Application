@@ -147,3 +147,11 @@
 .expense-form button:hover {
   background: #52b9d8;
 }
+
+/* === Chart Styles === */
+
+.chart-container {
+  width: 90%;
+  max-width: 400px; /* Keeps the pie chart from getting too big */
+  margin: 20px auto; /* Center it */
+}

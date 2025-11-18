@@ -4,6 +4,8 @@
 import React, { useState, useEffect } from 'react'; 
 import { useNavigate, Link } from 'react-router-dom';
 import ExpenseForm from './expenseForm.js'; 
+// import pi chart
+import ExpensePieChart from './expensePieChart.js';
 import '../App.css'; 
 // ===============================
 const Dashboard = () => {
@@ -17,6 +19,9 @@ const Dashboard = () => {
 
     // store to show loading message
     const [isLoading, setIsLoading] = useState(true);
+
+    // Pi chart to filter by category
+    const [selectedCategory, setSelectedCategory] = useState(null);
     // =========================
 
     // function for fetching expenses from server
@@ -77,6 +82,12 @@ const Dashboard = () => {
         return <div className="error-message">Error: {error}</div>;
     }
     // ====================
+
+    // ==== create filtered list
+    const filteredExpenses = selectedCategory
+        ? expenses.filter(expense => expense.category === selectedCategory)
+        : expenses; // if no category selected, show all
+    // ========================
         
 
     // ===== JSX RETURN =======
@@ -90,27 +101,53 @@ const Dashboard = () => {
 
             <hr />
 
+            {/* --- Pi Chart --- */}
+            <ExpensePieChart
+                expenses={expenses}
+                onCategorySelect={setSelectedCategory}
+            />
+
+            {/* --- clear filter button --- */}
+            {selectedCategory && (
+
+                <button
+                    className="form-button" // Re-using your form button style
+                    style={{width: 'auto', backgroundColor: '#ff6b6b', marginTop: '10px'}} 
+                    onClick={() => setSelectedCategory(null)} // Set filter back to null
+                >
+                    Clear Filter (Showing: {selectedCategory})
+                </button>
+                
+            )}
+
+
             {/* --- display expenses --- */}
             <h3>Your Expenses</h3>
 
-            {expenses.length === 0 ? (
-                <p>No expenses found.</p>
+            
+            {/* dynamic text based on the filter */}
+            {filteredExpenses.length === 0 ? (
+                <p>No expenses found{selectedCategory ? ` for ${selectedCategory}` : ''}.</p>
             ) : (
-                // use "expense-list" class
+
                 <ul className="expense-list">
-                    {expenses.map((expense) => (
+                    {/* using 'filteredExpenses' here instead of 'expenses' */}
+                    {filteredExpenses.map((expense) => (
                         <li key={expense.expense_id} className="expense-item">
+
                             <div><strong>Category:</strong> {expense.category}</div>
                             <div><strong>Amount:</strong> ${expense.amount}</div>
                             <div><strong>Date:</strong> {new Date(expense.date).toLocaleDateString()}</div>
                             {expense.description && <div><strong>Description:</strong> {expense.description}</div>}
-                            {/* TODO: Add Update and Delete buttons here */}
+
                         </li>
                     ))}
                 </ul>
             )}
+
         </div>
     );
 };
+
 
 export default Dashboard;
