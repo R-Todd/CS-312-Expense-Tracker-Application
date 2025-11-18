@@ -3,9 +3,12 @@
 // =========== IMPORTS ===========
 import React, { useState, useEffect } from 'react'; 
 import { useNavigate, Link } from 'react-router-dom';
+// import expense form
 import ExpenseForm from './expenseForm.js'; 
 // import pi chart
 import ExpensePieChart from './expensePieChart.js';
+// expense summary 
+import ExpenseSummary from './expenseSummary.js';
 import '../App.css'; 
 // ===============================
 const Dashboard = () => {
@@ -95,8 +98,9 @@ const Dashboard = () => {
         <div>
             <h2>Dashboard</h2>
             <p>Welcome to your dashboard!</p>
-
-            {/* pass fetchExpenses to refresh list one a new expense is added */}
+            {/* --- expense summary --- */}
+            <ExpenseSummary expenses={filteredExpenses} />
+            {/* fetchExpenses to refresh list one a new expense is added */}
             <ExpenseForm onExpenseAdded={fetchExpenses} />
 
             <hr />
@@ -117,7 +121,7 @@ const Dashboard = () => {
                 >
                     Clear Filter (Showing: {selectedCategory})
                 </button>
-                
+
             )}
 
 

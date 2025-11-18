@@ -155,3 +155,34 @@
   max-width: 400px; /* Keeps the pie chart from getting too big */
   margin: 20px auto; /* Center it */
 }
+
+/* === Summary Card Styles === */
+
+.summary-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  width: 90%;
+  max-width: 600px;
+  margin: 20px 0;
+}
+
+.summary-card {
+  background-color: #3a3f4a;
+  border-radius: 8px;
+  padding: 20px;
+  flex: 1; /* Makes all cards share the space equally */
+  text-align: center;
+}
+
+.summary-card-title {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-bottom: 8px;
+}
+
+.summary-card-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #61dafb; /* React blue */
+}
