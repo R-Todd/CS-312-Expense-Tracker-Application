@@ -1,4 +1,4 @@
-// client/components/dashboard.js
+// client/src/components/dashboard.js
 
 // =========== IMPORTS ===========
 import React, { useState, useEffect } from 'react'; 
@@ -9,6 +9,9 @@ import ExpenseForm from './expenseForm.js';
 import ExpensePieChart from './expensePieChart.js';
 // expense summary 
 import ExpenseSummary from './expenseSummary.js';
+// NEW: Import Predictions component
+import Predictions from './predictions.js';
+
 import '../App.css'; 
 // ===============================
 const Dashboard = () => {
@@ -16,6 +19,8 @@ const Dashboard = () => {
     // ======= Constants =======
     // store list of expenses
     const [expenses, setExpenses] = useState([]);
+    // NEW: store predictions
+    const [predictions, setPredictions] = useState([]);
 
     // store loading errors
     const [error, setError] = useState('');
@@ -30,8 +35,8 @@ const Dashboard = () => {
     const [selectedMonth, setSelectedMonth] = useState('all');
     // =========================
 
-    // function for fetching expenses from server
-    const fetchExpenses = async () => {
+    // function for fetching data (expenses + predictions) from server
+    const fetchAllData = async () => {
         // try block
         try {
             // get token from local storage
@@ -44,14 +49,16 @@ const Dashboard = () => {
                 return;
             }
 
-            // --- api call ---
+            const headers = {
+                'Content-Type': 'application/json',
+                // x-auth-token header (from authMiddleware.js)
+                'x-auth-token': token
+            };
+
+            // --- 1. api call for expenses ---
             const response = await fetch('/api/expenses', {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // x-auth-token header (from authMiddleware.js)
-                    'x-auth-token': token
-                }
+                headers: headers
             });
 
             // check for server error
@@ -66,6 +73,17 @@ const Dashboard = () => {
             // set expenses state with fetched data
             setExpenses(data);
 
+            // --- 2. api call for predictions (New) ---
+            const predResponse = await fetch('/api/expenses/predictions', {
+                method: 'GET',
+                headers: headers
+            });
+
+            if (predResponse.ok) {
+                const predData = await predResponse.json();
+                setPredictions(predData);
+            }
+
             // catch error
         } catch (err) {
             setError(err.message);
@@ -74,9 +92,9 @@ const Dashboard = () => {
         }
     };
 
-    // === fetch expense from API
+    // === fetch data from API
     useEffect(() => {
-        fetchExpenses();
+        fetchAllData();
     }, []);
     // ========================
 
@@ -108,12 +126,6 @@ const Dashboard = () => {
     ];
     // ========================
 
-    // // ==== create filtered list
-    // const filteredExpenses = selectedCategory
-    //     ? expenses.filter(expense => expense.category === selectedCategory)
-    //     : expenses; // if no category selected, show all
-    // // ========================
-
     // ==== create filtered list with month filter ====
     const filteredExpenses = expenses.filter(expense => {
         // filter by category if selected
@@ -127,8 +139,6 @@ const Dashboard = () => {
     // ===============================================
 
 
-        
-
     // ===== JSX RETURN =======
     return (
         <div>
@@ -136,8 +146,12 @@ const Dashboard = () => {
             <p>Welcome to your dashboard!</p>
             {/* --- expense summary --- */}
             <ExpenseSummary expenses={filteredExpenses} />
-            {/* fetchExpenses to refresh list one a new expense is added */}
-            <ExpenseForm onExpenseAdded={fetchExpenses} />
+
+            {/* NEW: Predictions Component */}
+            <Predictions predictions={predictions} />
+
+            {/* fetchAllData to refresh list when a new expense is added */}
+            <ExpenseForm onExpenseAdded={fetchAllData} />
 
             <hr />
 
@@ -154,7 +168,7 @@ const Dashboard = () => {
             <div className="filter-controls">
                 
                 {/* Month Dropdown */}
-                <div> {/*  Added a div for layout */}
+                <div> {/* Added a div for layout */}
                     <label htmlFor="month-filter" style={{marginRight: '10px'}}>Filter by Month:</label>
                     <select
                         id="month-filter"
