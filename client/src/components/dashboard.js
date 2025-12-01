@@ -5,6 +5,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 // import expense form
 import ExpenseForm from './expenseForm.js'; 
+// NEW: import income form
+import IncomeForm from './incomeForm.js'; 
 // import pi chart
 import ExpensePieChart from './expensePieChart.js';
 // expense summary 
@@ -19,7 +21,9 @@ const Dashboard = () => {
     // ======= Constants =======
     // store list of expenses
     const [expenses, setExpenses] = useState([]);
-    // NEW: store predictions
+    // NEW: store list of income
+    const [income, setIncome] = useState([]);
+    // store predictions
     const [predictions, setPredictions] = useState([]);
 
     // store loading errors
@@ -36,6 +40,7 @@ const Dashboard = () => {
     // =========================
 
     // function for fetching data (expenses + predictions) from server
+    // MODIFIED: fetchAllData now fetches income as well
     const fetchAllData = async () => {
         // try block
         try {
@@ -56,24 +61,44 @@ const Dashboard = () => {
             };
 
             // --- 1. api call for expenses ---
-            const response = await fetch('/api/expenses', {
+            const expenseResponse = await fetch('/api/expenses', {
                 method: 'GET',
                 headers: headers
             });
 
             // check for server error
-            if (!response.ok) {
-                const errData = await response.json();
+            if (!expenseResponse.ok) {
+                const errData = await expenseResponse.json();
                 throw new Error(errData.error || 'Failed to fetch expenses');
             }
 
             // parse JSON response
-            const data = await response.json();
+            const expenseData = await expenseResponse.json();
 
             // set expenses state with fetched data
-            setExpenses(data);
+            setExpenses(expenseData);
 
-            // --- 2. api call for predictions (New) ---
+            // --- NEW: 2. api call for income ---
+            const incomeResponse = await fetch('/api/income', {
+                method: 'GET',
+                headers: headers
+            });
+
+            // check for server error
+            if (!incomeResponse.ok) {
+                const errData = await incomeResponse.json();
+                // We'll throw an error only if it's a critical failure, otherwise log a warning
+                console.warn('Failed to fetch income data. Assuming zero income.', errData.error);
+                setIncome([]); // Fallback to empty array
+            } else {
+                // parse JSON response
+                const incomeData = await incomeResponse.json();
+                // set income state with fetched data
+                setIncome(incomeData);
+            }
+
+
+            // --- 3. api call for predictions (New) ---
             const predResponse = await fetch('/api/expenses/predictions', {
                 method: 'GET',
                 headers: headers
@@ -127,15 +152,25 @@ const Dashboard = () => {
     // ========================
 
     // ==== create filtered list with month filter ====
+    // Filter expenses by category and month
     const filteredExpenses = expenses.filter(expense => {
         // filter by category if selected
         const categoryMatch = !selectedCategory || expense.category === selectedCategory;
 
         // check if month == 'all'
-        const monthMatch = selectedMonth === 'all' || new Date(expense.date).getMonth() == selectedMonth;
+        const monthMatch = selectedMonth === 'all' || new Date(expense.date).getMonth() == selectedMonth; //
 
         return categoryMatch && monthMatch;
     });
+    
+    // NEW: Filter income by month
+    const filteredIncome = income.filter(item => {
+        // check if month == 'all'
+        const monthMatch = selectedMonth === 'all' || new Date(item.date).getMonth() == selectedMonth;
+
+        return monthMatch;
+    });
+
     // ===============================================
 
 
@@ -145,17 +180,29 @@ const Dashboard = () => {
             <h2>Dashboard</h2>
             <p>Welcome to your dashboard!</p>
             {/* --- expense summary --- */}
-            <ExpenseSummary expenses={filteredExpenses} />
+            {/* MODIFIED: Passing both filteredExpenses and filteredIncome to ExpenseSummary */}
+            <ExpenseSummary expenses={filteredExpenses} income={filteredIncome} />
 
-            {/* NEW: Predictions Component */}
+            {/* Predictions Component */}
             <Predictions predictions={predictions} />
 
-            {/* fetchAllData to refresh list when a new expense is added */}
-            <ExpenseForm onExpenseAdded={fetchAllData} />
+            {/* Forms Container - NEW: This structure allows the two forms to sit side-by-side */}
+            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', maxWidth: '600px', width: '90%', margin: '0 auto 20px' }}>
+                {/* Expense Form */}
+                <div style={{ flex: 1 }}>
+                    {/* fetchAllData to refresh list when a new expense is added */}
+                    <ExpenseForm onExpenseAdded={fetchAllData} />
+                </div>
+                {/* NEW: Income Form */}
+                <div style={{ flex: 1 }}>
+                    <IncomeForm onIncomeAdded={fetchAllData} />
+                </div>
+            </div>
 
             <hr />
 
             {/* --- Pi Chart --- */}
+            {/* The pie chart should only visualize expenses */}
             <ExpensePieChart
                 expenses={expenses}
                 onCategorySelect={setSelectedCategory}
@@ -198,8 +245,7 @@ const Dashboard = () => {
                 )}
             </div>
 
-
-            {/* dynamic text based on the filter */}
+            {/* --- Expense List --- */}
             {filteredExpenses.length === 0 ? (
                 <p>No expenses found{selectedCategory ? ` for ${selectedCategory}` : ''}{selectedMonth !== 'all' ? ` in ${monthOptions.find(m => m.value === selectedMonth).label}` : ''}.</p>
             ) : (
@@ -217,6 +263,24 @@ const Dashboard = () => {
                         </li>
                     ))}
                 </ul>
+            )}
+            
+            {/* NEW: Display Income List (Optional, but useful for testing) */}
+            {filteredIncome.length > 0 && (
+                <>
+                    <h3 style={{ marginTop: '30px' }}>Your Income Entries</h3>
+                    <ul className="expense-list" style={{border: '1px solid #A0D2EB'}}>
+                        {filteredIncome.map((item) => (
+                            // Using a different style for income entries for visual distinction
+                            <li key={item.income_id} className="expense-item" style={{borderLeft: '5px solid #A0D2EB'}}>
+                                <div><strong>Source:</strong> {item.source}</div>
+                                <div><strong>Amount:</strong> ${item.amount}</div>
+                                <div><strong>Date:</strong> {new Date(item.date).toLocaleDateString()}</div>
+                                {item.description && <div><strong>Description:</strong> {item.description}</div>}
+                            </li>
+                        ))}
+                    </ul>
+                </>
             )}
 
         </div>
