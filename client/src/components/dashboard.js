@@ -5,10 +5,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 // import expense form
 import ExpenseForm from './expenseForm.js'; 
-// NEW: import income form
+// import edit expense form
+import EditExpenseForm from './EditExpenseForm.js'; 
+// import edit income form
+import EditIncomeForm from './EditIncomeForm.js';
+// import income form
 import IncomeForm from './incomeForm.js'; 
 // import pi chart
 import ExpensePieChart from './expensePieChart.js';
+// NEW: import bar chart
+import ExpenseBarChart from './ExpenseBarChart.js';
 // expense summary 
 import ExpenseSummary from './expenseSummary.js';
 // NEW: Import Predictions component
@@ -25,6 +31,11 @@ const Dashboard = () => {
     const [income, setIncome] = useState([]);
     // store predictions
     const [predictions, setPredictions] = useState([]);
+
+    // State to track which expense is currently being edited
+    const [editingExpenseId, setEditingExpenseId] = useState(null);
+    // NEW: State to track which income entry is currently being edited
+    const [editingIncomeId, setEditingIncomeId] = useState(null);
 
     // store loading errors
     const [error, setError] = useState('');
@@ -132,7 +143,7 @@ const Dashboard = () => {
     }
     // ====================
 
-    // ======= Handle Month Filter Change =======
+    // ======= Handle Month Filter Change (Logic remains the same) =======
     // uses array for month dropdown
     const monthOptions = [
         { label: 'All Months', value: 'all' },
@@ -151,14 +162,14 @@ const Dashboard = () => {
     ];
     // ========================
 
-    // ==== create filtered list with month filter ====
+    // ==== create filtered list with month filter (Logic remains the same) ====
     // Filter expenses by category and month
     const filteredExpenses = expenses.filter(expense => {
         // filter by category if selected
         const categoryMatch = !selectedCategory || expense.category === selectedCategory;
 
         // check if month == 'all'
-        const monthMatch = selectedMonth === 'all' || new Date(expense.date).getMonth() == selectedMonth; //
+        const monthMatch = selectedMonth === 'all' || new Date(expense.date).getMonth() == selectedMonth; 
 
         return categoryMatch && monthMatch;
     });
@@ -180,20 +191,21 @@ const Dashboard = () => {
             <h2>Dashboard</h2>
             <p>Welcome to your dashboard!</p>
             {/* --- expense summary --- */}
-            {/* MODIFIED: Passing both filteredExpenses and filteredIncome to ExpenseSummary */}
+            {/* Passing both filteredExpenses and filteredIncome to ExpenseSummary */}
             <ExpenseSummary expenses={filteredExpenses} income={filteredIncome} />
 
             {/* Predictions Component */}
             <Predictions predictions={predictions} />
 
-            {/* Forms Container - NEW: This structure allows the two forms to sit side-by-side */}
-            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', maxWidth: '600px', width: '90%', margin: '0 auto 20px' }}>
+            {/* Forms Container - Allows the two forms to sit side-by-side */}
+            {/* Set max width to 800px to accommodate forms better */}
+            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', maxWidth: '800px', width: '90%', margin: '0 auto 20px' }}>
                 {/* Expense Form */}
                 <div style={{ flex: 1 }}>
                     {/* fetchAllData to refresh list when a new expense is added */}
                     <ExpenseForm onExpenseAdded={fetchAllData} />
                 </div>
-                {/* NEW: Income Form */}
+                {/* Income Form */}
                 <div style={{ flex: 1 }}>
                     <IncomeForm onIncomeAdded={fetchAllData} />
                 </div>
@@ -207,6 +219,13 @@ const Dashboard = () => {
                 expenses={expenses}
                 onCategorySelect={setSelectedCategory}
             />
+            
+            {/* NEW: Bar Chart for Monthly Trends */}
+            <ExpenseBarChart
+                // Pass ALL expenses to show a full trend history
+                expenses={expenses}
+            />
+
 
             {/* --- display expenses --- */}
             <h3>Your Expenses</h3>
@@ -215,7 +234,7 @@ const Dashboard = () => {
             <div className="filter-controls">
                 
                 {/* Month Dropdown */}
-                <div> {/* Added a div for layout */}
+                <div> 
                     <label htmlFor="month-filter" style={{marginRight: '10px'}}>Filter by Month:</label>
                     <select
                         id="month-filter"
@@ -235,7 +254,7 @@ const Dashboard = () => {
                 {/* inside the filter-controls div */}
                 {selectedCategory && (
                     <button
-                        className="form-button" // Re-using your form button style
+                        className="form-button" 
                         // MODIFIED: Changed margin-top to margin: 0
                         style={{width: 'auto', backgroundColor: '#ff6b6b', margin: 0}} 
                         onClick={() => setSelectedCategory(null)} // Set filter back to null
@@ -254,29 +273,86 @@ const Dashboard = () => {
                     {/* using 'filteredExpenses' here instead of 'expenses' */}
                     {filteredExpenses.map((expense) => (
                         <li key={expense.expense_id} className="expense-item">
-
-                            <div><strong>Category:</strong> {expense.category}</div>
-                            <div><strong>Amount:</strong> ${expense.amount}</div>
-                            <div><strong>Date:</strong> {new Date(expense.date).toLocaleDateString()}</div>
-                            {expense.description && <div><strong>Description:</strong> {expense.description}</div>}
-
+                            {/* Conditional Rendering for Expense Edit Mode */}
+                            {editingExpenseId === expense.expense_id ? (
+                                <EditExpenseForm 
+                                    expense={expense}
+                                    onUpdate={fetchAllData} // Refresh all data on success
+                                    onCancel={() => setEditingExpenseId(null)} // Close the edit form
+                                />
+                            ) : (
+                                <>
+                                    {/* Normal Expense Display */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>
+                                            <div><strong>Category:</strong> {expense.category}</div>
+                                            <div><strong>Amount:</strong> ${expense.amount}</div>
+                                            <div><strong>Date:</strong> {new Date(expense.date).toLocaleDateString()}</div>
+                                            {expense.description && <div><strong>Description:</strong> {expense.description}</div>}
+                                        </div>
+                                        {/* Edit Button */}
+                                        <button 
+                                            onClick={() => setEditingExpenseId(expense.expense_id)}
+                                            style={{ 
+                                                background: '#4BC0C0', 
+                                                border: 'none', 
+                                                padding: '5px 10px', 
+                                                borderRadius: '4px', 
+                                                cursor: 'pointer',
+                                                height: '40px'
+                                            }}
+                                        >
+                                            Edit
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </li>
                     ))}
                 </ul>
             )}
             
-            {/* NEW: Display Income List (Optional, but useful for testing) */}
+            {/* Display Income List (MODIFIED) */}
             {filteredIncome.length > 0 && (
                 <>
                     <h3 style={{ marginTop: '30px' }}>Your Income Entries</h3>
-                    <ul className="expense-list" style={{border: '1px solid #A0D2EB'}}>
+                    <ul className="expense-list"> {/* Removed inline style here for uniformity, expense-list handles basic styling */}
                         {filteredIncome.map((item) => (
-                            // Using a different style for income entries for visual distinction
                             <li key={item.income_id} className="expense-item" style={{borderLeft: '5px solid #A0D2EB'}}>
-                                <div><strong>Source:</strong> {item.source}</div>
-                                <div><strong>Amount:</strong> ${item.amount}</div>
-                                <div><strong>Date:</strong> {new Date(item.date).toLocaleDateString()}</div>
-                                {item.description && <div><strong>Description:</strong> {item.description}</div>}
+                                {/* Conditional Rendering for Income Edit Mode */}
+                                {editingIncomeId === item.income_id ? (
+                                    <EditIncomeForm
+                                        incomeEntry={item}
+                                        onUpdate={fetchAllData} // Refresh all data on success
+                                        onCancel={() => setEditingIncomeId(null)} // Close the edit form
+                                    />
+                                ) : (
+                                    <>
+                                        {/* Normal Income Display */}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div>
+                                                <div><strong>Source:</strong> {item.source}</div>
+                                                <div><strong>Amount:</strong> ${item.amount}</div>
+                                                <div><strong>Date:</strong> {new Date(item.date).toLocaleDateString()}</div>
+                                                {item.description && <div><strong>Description:</strong> {item.description}</div>}
+                                            </div>
+                                            {/* NEW: Edit Button for Income */}
+                                            <button 
+                                                onClick={() => setEditingIncomeId(item.income_id)}
+                                                style={{ 
+                                                    background: '#A0D2EB', // Blue color for income edit
+                                                    border: 'none', 
+                                                    padding: '5px 10px', 
+                                                    borderRadius: '4px', 
+                                                    cursor: 'pointer',
+                                                    height: '40px'
+                                                }}
+                                            >
+                                                Edit
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
                             </li>
                         ))}
                     </ul>
