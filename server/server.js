@@ -30,6 +30,9 @@ app.use('/api/expenses', require('./routes/expenses'));
 // income routes
 app.use('/api/income', require('./routes/income'));
 
+//savings routes
+app.use('/api/savings', require('./routes/savings'));
+
 // ===========================================================
 
 

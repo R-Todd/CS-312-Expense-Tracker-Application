@@ -13,6 +13,9 @@ import {
     Legend 
 } from 'chart.js';
 
+// NEW: Import the centralized color map
+import { CATEGORY_COLORS } from '../utils/colorPalette';
+
 // Register the components Chart.js needs
 ChartJS.register(
     CategoryScale,
@@ -32,61 +35,68 @@ const monthNames = [
 // ExpenseBarChart component receives the full list of expenses
 const ExpenseBarChart = ({ expenses }) => {
     
-    // --- 1. Aggregate expenses by Month/Year ---
-    const monthlyTotals = expenses.reduce((acc, expense) => {
+    // 1. Identify all unique categories
+    const allCategories = [...new Set(expenses.map(exp => exp.category))].sort();
+
+    // 2. Aggregate total spending per category per month
+    const monthlyCategoryTotals = expenses.reduce((acc, expense) => {
         const date = new Date(expense.date);
-        const monthIndex = date.getMonth(); // 0-11
+        const monthIndex = date.getMonth(); 
         const year = date.getFullYear();
-        const key = `${monthNames[monthIndex]} ${year}`; // e.g., 'Nov 2025'
-        
+        const monthYearKey = `${monthNames[monthIndex]} ${year}`; 
         const amount = parseFloat(expense.amount);
+        const category = expense.category;
         
-        if (!acc[key]) {
-            acc[key] = 0;
+        if (!acc[monthYearKey]) {
+            acc[monthYearKey] = {};
         }
-        acc[key] += amount;
+        // Sum the amount for the specific category within this month
+        acc[monthYearKey][category] = (acc[monthYearKey][category] || 0) + amount;
         
         return acc;
-    }, {}); // Start with an empty object
+    }, {}); 
 
-    // Convert the map into sorted arrays for labels and data
-    const labels = Object.keys(monthlyTotals).sort((a, b) => {
-        // Simple sort logic based on parsing the Month Year string back to Date
+    // 3. Extract and sort unique month/year labels (X-axis)
+    const labels = Object.keys(monthlyCategoryTotals).sort((a, b) => {
+        // Sort by parsing the Month Year string back to Date
         const dateA = new Date(a.replace(' ', ' 1, '));
         const dateB = new Date(b.replace(' ', ' 1, '));
         return dateA - dateB;
     });
 
-    const dataValues = labels.map(label => monthlyTotals[label]);
+    // 4. Create datasets: one for each category
+    const datasets = allCategories.map(category => {
+        // MODIFIED: Use the imported CATEGORY_COLORS map with a fallback
+        const color = CATEGORY_COLORS[category] || CATEGORY_COLORS['Default']; 
+        
+        return {
+            label: category,
+            // Get data for this category across all months, filling in 0 for missing months
+            data: labels.map(monthYear => monthlyCategoryTotals[monthYear][category] || 0),
+            backgroundColor: color, 
+        };
+    });
 
-    // --- 2. Format data for Chart.js ---
+
+    // --- 5. Format data for Chart.js ---
     const chartData = {
         labels: labels,
-        datasets: [
-            {
-                label: 'Monthly Spending Total',
-                data: dataValues,
-                backgroundColor: '#FF6384', // Pink/Red for Expenses
-                borderColor: '#FF6384',
-                borderWidth: 1,
-                hoverBackgroundColor: '#FF9F40',
-            },
-        ],
+        datasets: datasets,
     };
 
-    // Chart.js options
+    // --- 6. Chart.js options (Including Axis Titles and Formatting) ---
     const chartOptions = {
         responsive: true,
         plugins: {
             legend: {
                 position: 'top',
                 labels: {
-                    color: 'white' // Make legend text white
+                    color: 'white'
                 }
             },
             title: {
                 display: true,
-                text: 'Expense Trends Over Time (All Months)',
+                text: 'Monthly Spending Breakdown by Category',
                 color: 'white'
             },
             tooltip: {
@@ -107,16 +117,37 @@ const ExpenseBarChart = ({ expenses }) => {
         },
         scales: {
             x: {
+                stacked: true, // Stack the bars
+                title: { // NEW: X-Axis Title
+                    display: true,
+                    text: 'Month / Year',
+                    color: 'white'
+                },
                 ticks: {
-                    color: 'white' // X-axis label color
+                    color: 'white'
                 },
                 grid: {
-                    color: 'rgba(255, 255, 255, 0.1)' // Light grid lines
+                    color: 'rgba(255, 255, 255, 0.1)'
                 }
             },
             y: {
-                ticks: {
-                    color: 'white' // Y-axis label color
+                stacked: true, // Stack the bars
+                title: { // NEW: Y-Axis Title
+                    display: true,
+                    text: 'Total Expenditure ($)',
+                    color: 'white'
+                },
+                ticks: { 
+                    color: 'white',
+                    callback: function(value, index, ticks) {
+                        // Format the tick value as currency, rounded to whole dollars for clean axis labels
+                        return new Intl.NumberFormat('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0 
+                        }).format(value);
+                    }
                 },
                 grid: {
                     color: 'rgba(255, 255, 255, 0.1)'
@@ -126,7 +157,6 @@ const ExpenseBarChart = ({ expenses }) => {
     };
     
     return (
-        // Added inline style to increase max width for the bar chart
         <div className="chart-container" style={{ maxWidth: '800px', margin: '40px auto 20px auto' }}>
             <Bar 
                 data={chartData} 

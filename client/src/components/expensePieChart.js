@@ -6,6 +6,9 @@ import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { getElementAtEvent } from 'react-chartjs-2';
 
+// NEW: Import the centralized color array
+import { BACKGROUND_COLOR_ARRAY } from '../utils/colorPalette';
+
 // Register the components Chart.js needs
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -36,22 +39,9 @@ const ExpensePieChart = ({ expenses, onCategorySelect }) => {
                 label: 'Expenses by Category',
                 // The values for the chart 
                 data: Object.values(categoryTotals),
-                backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF',
-                    '#FF9F40'
-                ],
-                hoverBackgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF',
-                    '#FF9F40'
-                ],
+                // MODIFIED: Use the imported array, slice it based on the number of categories
+                backgroundColor: BACKGROUND_COLOR_ARRAY.slice(0, Object.keys(categoryTotals).length),
+                hoverBackgroundColor: BACKGROUND_COLOR_ARRAY.slice(0, Object.keys(categoryTotals).length),
                 borderColor: '#282c34',
                 borderWidth: 2,
             },
