@@ -26,6 +26,8 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth'));
 // auth middleware
 app.use('/api/expenses', require('./routes/expenses'));
+// NEW: Income routes for Phase 2
+app.use('/api/income', require('./routes/income')); // <-- ADD THIS LINE
 
 // ===========================================================
 
