@@ -9,7 +9,7 @@ COPY package*.json ./
 
 # Install client dependencies
 # MODIFIED: Removing --force, as the React downgrade should fix the peer dependency conflict.
-RUN npm install
+RUN npm install --force
 
 # Copy the rest of the client source code
 COPY . .
