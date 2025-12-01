@@ -21,20 +21,14 @@ app.use(cors());
 // Parse incoming JSON request bodies
 app.use(express.json());
 
-// ================== ROUTES ==================
+// ================== ROUTES /server/routes ==================
 // Authentication routes
 app.use('/api/auth', require('./routes/auth'));
-<<<<<<< Updated upstream
-=======
-// auth middleware
+// Expense routes
 app.use('/api/expenses', require('./routes/expenses'));
-
-// income routes
-app.use('/api/income', require('./routes/income'));
+// NEW: Income routes for Phase 2
+app.use('/api/income', require('./routes/income')); 
 // ===========================================================
-
-
->>>>>>> Stashed changes
 
 
 // Root route - Returns a simple message to confirm API is running

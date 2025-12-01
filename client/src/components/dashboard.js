@@ -1,361 +1,269 @@
 // client/components/dashboard.js
 
 // =========== IMPORTS ===========
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+import React, { useState, useEffect } from 'react'; 
+import { useNavigate, Link } from 'react-router-dom';
+// import expense form
+import ExpenseForm from './expenseForm.js'; 
+// NEW: import income form
+import IncomeForm from './incomeForm.js';
+// import pi chart (Only used for expense categorization visualization)
+import ExpensePieChart from './expensePieChart.js';
+// expense summary (Now displays Net Total)
+import ExpenseSummary from './expenseSummary.js';
+import '../App.css'; 
 // ===============================
 
-// Some simple category inputs
-const CATEGORY_OPTIONS = [
-  "Salary",
-  "Rent",
-  "Groceries",
-  "Gas",
-  "Entertainment",
-  "Utilities",
-  "Other",
-];
+// Define a common fetch function for both expenses and income (DRY principle)
+const fetchTransactions = async (endpoint, token) => {
+    const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-auth-token': token
+        }
+    });
 
-const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#8dd1e1", "#a4de6c"];
-
-const Dashboard = () => {
-  const navigate = useNavigate();
-
-  // All user-entered data lives here (starts empty)
-  const [transactions, setTransactions] = useState([]);
-
-  // Filters
-  const [selectedMonth, setSelectedMonth] = useState("all");   // "all" or "YYYY-MM"
-  const [selectedCategory, setSelectedCategory] = useState("all");
-
-  // Form state for adding a new transaction
-  const todayISO = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  const [formDate, setFormDate] = useState(todayISO);
-  const [formType, setFormType] = useState("expense");
-  const [formCategory, setFormCategory] = useState("Rent");
-  const [formAmount, setFormAmount] = useState("");
-
-  // Build a list of months from the current data (YYYY-MM)
-  const monthOptions = Array.from(
-    new Set(transactions.map((t) => t.date.slice(0, 7)))
-  )
-    .sort()
-    .reverse();
-
-  // Build list of categories based on what’s actually in the data
-  const derivedCategories = Array.from(
-    new Set(transactions.map((t) => t.category))
-  ).sort();
-
-  // Use actual categories if any exist; otherwise fall back to default list
-  const categoryFilterOptions =
-    derivedCategories.length > 0 ? derivedCategories : CATEGORY_OPTIONS;
-
-  // Filter transactions by month + category
-  const filtered = transactions.filter((t) => {
-    const matchesMonth =
-      selectedMonth === "all" ? true : t.date.startsWith(selectedMonth);
-    const matchesCategory =
-      selectedCategory === "all" ? true : t.category === selectedCategory;
-    return matchesMonth && matchesCategory;
-  });
-
-  // ---- Calculate totals: income, expenses, net, savings % ----
-  let incomeTotal = 0;
-  let expenseTotal = 0;
-
-  filtered.forEach((t) => {
-    if (t.type === "income") {
-      incomeTotal += t.amount;
-    } else if (t.type === "expense") {
-      expenseTotal += t.amount;
-    }
-  });
-
-  const netIncome = incomeTotal - expenseTotal;
-  const savingsRate =
-    incomeTotal > 0 ? ((netIncome / incomeTotal) * 100).toFixed(1) : "0.0";
-
-  // ---- Build pie chart data: expenses by category ----
-  const categoryMap = new Map();
-
-  filtered.forEach((t) => {
-    if (t.type !== "expense") return;
-    const prev = categoryMap.get(t.category) || 0;
-    categoryMap.set(t.category, prev + t.amount);
-  });
-
-  const pieDataRaw = Array.from(categoryMap.entries()).map(
-    ([name, value]) => ({ name, value })
-  );
-
-  const totalExpensesForPie = pieDataRaw.reduce(
-    (sum, item) => sum + item.value,
-    0
-  );
-
-  const pieData = pieDataRaw.map((item) => ({
-    ...item,
-    percent: totalExpensesForPie
-      ? ((item.value / totalExpensesForPie) * 100).toFixed(1)
-      : 0,
-  }));
-
-  const formatCurrency = (value) =>
-    value.toLocaleString(undefined, { style: "currency", currency: "USD" });
-
-  // ---- Handle form submission: add transaction ----
-  const handleAddTransaction = (e) => {
-    e.preventDefault();
-
-    const amountNumber = parseFloat(formAmount);
-    if (!formDate || !formCategory || isNaN(amountNumber) || amountNumber <= 0) {
-      alert("Please enter a valid date, category, and positive amount.");
-      return;
+    if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || `Failed to fetch from ${endpoint}`);
     }
 
-    const newTransaction = {
-      id: Date.now(),
-      date: formDate,
-      type: formType,           // "income" or "expense"
-      category: formCategory,
-      amount: amountNumber,
-    };
-
-    setTransactions((prev) => [...prev, newTransaction]);
-
-    // After adding, clear amount but keep last used date/category/type
-    setFormAmount("");
-  };
-
-  // ===== JSX RETURN =======
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        padding: "1.5rem",
-        background: "#f5f5f5",
-        fontFamily:
-          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      }}
-    >
-      {/* TOP BAR: title + sign-in / nav (top-right) */}
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "1rem",
-        }}
-      >
-        <h2 style={{ margin: 0 }}>Dashboard</h2>
-        <div style={{ textAlign: "right", fontSize: "0.9rem" }}>
-          <Link to="/" style={{ marginRight: "0.75rem" }}>
-            Home
-          </Link>
-          <button
-            onClick={() => navigate("/login")}
-            style={{
-              padding: "0.3rem 0.8rem",
-              borderRadius: "999px",
-              border: "1px solid #2563eb",
-              background: "white",
-              color: "#2563eb",
-              cursor: "pointer",
-            }}
-          >
-            Sign In
-          </button>
-        </div>
-      </header>
-
-      {/* MONTH FILTER centered above grid */}
-      <section
-        style={{
-          marginBottom: "1rem",
-          display: "flex",
-          justifyContent: "center",
-        }}
-      >
-        <div>
-          <label htmlFor="month-select" style={{ marginRight: "0.5rem" }}>
-            Filter by month:
-          </label>
-          <select
-            id="month-select"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-          >
-            <option value="all">All months</option>
-            {monthOptions.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
-        </div>
-      </section>
-
-      {/* MAIN GRID: left = chart, right = summary */}
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1.1fr) minmax(0, 1.1fr)",
-          gap: "1.5rem",
-          alignItems: "start",
-        }}
-      >
-        {/* LEFT COLUMN: Pie chart card with category selector below */}
-        <div
-          style={{
-            background: "white",
-            borderRadius: "0.75rem",
-            padding: "1rem 1.25rem",
-            boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-          }}
-        >
-          <h3 style={{ marginTop: 0, marginBottom: "0.25rem" }}>
-            Expenses by Category
-          </h3>
-          <p
-            style={{
-              marginTop: 0,
-              fontSize: "0.85rem",
-              color: "#555",
-              marginBottom: "0.75rem",
-            }}
-          >
-            Showing the percentage of expenses in each category.
-          </p>
-
-          {pieData.length === 0 ? (
-            <p>No expenses for this selection.</p>
-          ) : (
-            <div
-              style={{
-                width: "100%",
-                maxWidth: "360px",
-                height: 220, // smaller height so it’s less zoomed
-                margin: "0 auto",
-              }}
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={35}
-                    outerRadius={65} // smaller radius to avoid zoomed look
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell
-                        key={entry.name}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ fontSize: "0.8rem", padding: "0.4rem 0.6rem"}}
-                    formatter={(value, name, props) => {
-                        const percent = props?.payload?.percent ?? 0;
-                        return [
-                            `${formatCurrency(value)} (${percent}%)`,
-                            name,
-                        ]
-                    }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: "0.8rem"}} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {/* CATEGORY SELECTOR directly under the pie chart */}
-          <div style={{ marginTop: "1rem" }}>
-            <label
-              htmlFor="category-select"
-              style={{ marginRight: "0.5rem", fontSize: "0.85rem" }}
-            >
-              Filter by category:
-            </label>
-            <select
-              id="category-select"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              <option value="all">All categories</option>
-              {categoryFilterOptions.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: Summary / dashboard stats */}
-        <div
-          style={{
-            background: "white",
-            borderRadius: "0.75rem",
-            padding: "1rem 1.25rem",
-            boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-          }}
-        >
-          <h3 style={{ marginTop: 0, marginBottom: "0.25rem" }}>
-            Financial Overview
-          </h3>
-          <p
-            style={{
-              marginTop: 0,
-              fontSize: "0.85rem",
-              color: "#555",
-              marginBottom: "0.75rem",
-            }}
-          >
-            Summary based on current month and category filters.
-          </p>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr",
-              rowGap: "0.75rem",
-              fontSize: "0.95rem",
-            }}
-          >
-            <div>
-              <strong>Total Income:</strong>
-              <div>{formatCurrency(incomeTotal)}</div>
-            </div>
-            <div>
-              <strong>Total Expenses:</strong>
-              <div>{formatCurrency(expenseTotal)}</div>
-            </div>
-            <div>
-              <strong>Net Income:</strong>
-              <div>{formatCurrency(netIncome)}</div>
-            </div>
-            <div>
-              <strong>Savings %:</strong>
-              <div>{savingsRate}%</div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
+    return await response.json();
 };
 
-export default Dashboard;
+
+const Dashboard = () => {
+
+    // ======= Constants =======
+    const [expenses, setExpenses] = useState([]);
+    const [incomes, setIncomes] = useState([]); // NEW: state for income
+
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedMonth, setSelectedMonth] = useState('all');
+    // =========================
+
+    // NEW: Unified fetch function for all data
+    const fetchAllData = async () => {
+        setIsLoading(true);
+        setError('');
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setError('No token found, please log in');
+                setIsLoading(false);
+                return;
+            }
+
+            // Fetch expenses
+            const expensesData = await fetchTransactions('/api/expenses', token);
+            setExpenses(expensesData);
+
+            // NEW: Fetch incomes
+            const incomesData = await fetchTransactions('/api/income', token);
+            setIncomes(incomesData);
+
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // NEW: Handle delete (for expenses or income) (Phase 2 Delete Task)
+    const handleDelete = async (id, type) => {
+        // Determine the correct API endpoint
+        const endpoint = type === 'expense' ? `/api/expenses/${id}` : `/api/income/${id}`;
+        
+        if (!window.confirm(`Are you sure you want to delete this ${type}?`)) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(endpoint, {
+                method: 'DELETE',
+                headers: {
+                    'x-auth-token': token
+                }
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || `Failed to delete ${type}`);
+            }
+
+            // Refresh all data after successful deletion
+            fetchAllData();
+
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+
+    // === fetch all data from API
+    useEffect(() => {
+        fetchAllData();
+    }, []);
+    // ========================
+
+    // === render logic ===
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+    if (error) {
+        return <div className="error-message">Error: {error}</div>;
+    }
+    // ====================
+
+    // ======= Month Filter Options (Existing) =======
+    const monthOptions = [
+        { label: 'All Months', value: 'all' },
+        { label: 'January', value: '0' },
+        { label: 'February', value: '1' },
+        { label: 'March', value: '2' },
+        { label: 'April', value: '3' },
+        { label: 'May', value: '4' },
+        { label: 'June', value: '5' },
+        { label: 'July', value: '6' },
+        { label: 'August', value: '7' },
+        { label: 'September', value: '8' },
+        { label: 'October', value: '9' },
+        { label: 'November', value: '10' },
+        { label: 'December', value: '11' }
+    ];
+    // ========================
+
+    // ==== NEW: Combine and Filter Transactions for the list display ====
+    const allTransactions = [
+        // Map expenses: standard structure
+        ...expenses.map(e => ({...e, type: 'expense', transaction_id: e.expense_id, category: e.category})),
+        // Map incomes: use source as the category field for easier filtering; assign type and id.
+        ...incomes.map(i => ({...i, type: 'income', transaction_id: i.income_id, category: i.source, source: i.source})) 
+    ].sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date DESC
+
+    const filteredTransactions = allTransactions.filter(transaction => {
+        const isExpense = transaction.type === 'expense';
+        
+        // Category Match: Only filter expenses by the selected category. Income is always shown regardless of category filter.
+        const categoryMatch = !selectedCategory || (isExpense && transaction.category === selectedCategory);
+
+        // Month Match (using the original logic fix ==)
+        const monthMatch = selectedMonth === 'all' || new Date(transaction.date).getMonth() == selectedMonth;
+
+        return categoryMatch && monthMatch;
+    });
+    // ===================================================================
+        
+
+    // ===== JSX RETURN =======
+    return (
+        <div>
+            <h2>Dashboard</h2>
+            <p>Welcome to your dashboard!</p>
+            
+            {/* --- expense summary (Pass both arrays) --- */}
+            <ExpenseSummary expenses={expenses} incomes={incomes} />
+
+            {/* NEW: Container to show both forms side-by-side */}
+            <h3 className="dashboard-section-title">Add New Transaction</h3>
+            {/* Use the new class 'transaction-forms-container' */}
+            <div className="transaction-forms-container">
+                <ExpenseForm onExpenseAdded={fetchAllData} /> {/* Existing */}
+                <IncomeForm onIncomeAdded={fetchAllData} />   {/* NEW */}
+            </div>
+
+            <hr />
+
+            {/* --- Pi Chart (still only uses expenses for categorization) --- */}
+            <h3>Your Expenses Breakdown</h3>
+            <ExpensePieChart
+                expenses={expenses} 
+                onCategorySelect={setSelectedCategory}
+            />
+
+            <h3>Your Transactions</h3>
+
+            {/* --- Filter controls (Existing) --- */}
+            <div className="filter-controls">
+                
+                {/* Month Dropdown */}
+                <div> 
+                    <label htmlFor="month-filter" className="filter-label">Filter by Month:</label>
+                    <select
+                        id="month-filter"
+                        className = "month-filter"
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(e.target.value)}
+                    >
+                        {monthOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* --- clear filter button --- */}
+                {selectedCategory && (
+                    <button
+                        className="clear-filter-button" 
+                        onClick={() => setSelectedCategory(null)} 
+                    >
+                        Clear Category Filter (Showing: {selectedCategory})
+                    </button>
+                )}
+            </div>
+
+
+            {/* dynamic text based on the filter */}
+            {filteredTransactions.length === 0 ? (
+                <p>No transactions found{selectedCategory ? ` for expenses in ${selectedCategory}` : ''}{selectedMonth !== 'all' ? ` in ${monthOptions.find(m => m.value === selectedMonth).label}` : ''}.</p>
+            ) : (
+
+                <ul className="expense-list">
+                    {/* Iterate over combined, filtered list */}
+                    {filteredTransactions.map((transaction) => (
+                        <li 
+                            key={transaction.transaction_id} 
+                            // Dynamically apply border color class for income/expense distinction
+                            className={`expense-item ${transaction.type === 'income' ? 'is-income' : 'is-expense'}`}
+                        >
+                            <div>
+                                <strong>Type:</strong> 
+                                {/* Dynamically apply text color class */}
+                                <span className={transaction.type === 'income' ? 'income-type-label' : 'expense-type-label'}>
+                                    {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
+                                </span>
+                            </div>
+                            <div>
+                                <strong>{transaction.type === 'expense' ? 'Category' : 'Source'}:</strong> {transaction.category}
+                            </div>
+                            <div>
+                                <strong>Amount:</strong> ${transaction.amount}
+                            </div>
+                            <div><strong>Date:</strong> {new Date(transaction.date).toLocaleDateString()}</div>
+                            {transaction.description && <div><strong>Description:</strong> {transaction.description}</div>}
+
+                            {/* NEW: Delete Button (Phase 2 requirement) */}
+                            <button 
+                                onClick={() => handleDelete(transaction.transaction_id, transaction.type)}
+                                className="delete-button"
+                            >
+                                Delete
+                            </button>
+
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+        </div>
+    );
+};
+
+
+export default Dashboard;s

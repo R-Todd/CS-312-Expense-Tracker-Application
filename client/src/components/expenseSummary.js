@@ -6,7 +6,7 @@ import '../App.css'; // Import styles
 // ===============================
 
 // ExpenseSummary component - now receives both expenses and incomes
-const ExpenseSummary = ({ expenses, incomes }) => { // <-- ACCEPT NEW PROP
+const ExpenseSummary = ({ expenses, incomes }) => { 
 
     // --- 1. Calculate Totals ---
     // Calculate total spending from expenses (Existing logic)
@@ -24,8 +24,8 @@ const ExpenseSummary = ({ expenses, incomes }) => { // <-- ACCEPT NEW PROP
     // Calculate Net Total (Income - Expenses) (NEW for Phase 2)
     const netTotal = totalIncome - totalExpenses;
 
-    // Get the total number of expense items
-    const totalItems = expenses.length;
+    // Determine the class for Net Total based on its value
+    const netTotalClass = netTotal >= 0 ? 'net-positive' : 'net-negative';
 
     // --- 2. JSX Return ---
     return (
@@ -34,11 +34,11 @@ const ExpenseSummary = ({ expenses, incomes }) => { // <-- ACCEPT NEW PROP
             {/* TOTAL INCOME (NEW for Phase 2) */}
             <div className="summary-card">
                 <div className="summary-card-title">Total Income</div>
-                {/* Use a green color for income */}
-                <div className="summary-card-value" style={{color: 'lightgreen'}}>${totalIncome.toFixed(2)}</div> 
+                {/* Use the new class 'income-value' */}
+                <div className="summary-card-value income-value">${totalIncome.toFixed(2)}</div> 
             </div>
             
-            {/* TOTAL EXPENSES (Phase 1 logic, kept for comparison) */}
+            {/* TOTAL EXPENSES (Phase 1 logic) */}
             <div className="summary-card">
                 <div className="summary-card-title">Total Expenses</div>
                 {/* Format to 2 decimal places */}
@@ -48,8 +48,8 @@ const ExpenseSummary = ({ expenses, incomes }) => { // <-- ACCEPT NEW PROP
             {/* NET TOTAL (NEW for Phase 2) */}
             <div className="summary-card">
                 <div className="summary-card-title">Net Total</div>
-                {/* Color changes based on net value (positive = green, negative = red) */}
-                <div className="summary-card-value" style={{color: netTotal >= 0 ? 'lightgreen' : '#FF6384'}}>
+                {/* Use the dynamically determined class */}
+                <div className={`summary-card-value ${netTotalClass}`}>
                     ${netTotal.toFixed(2)}
                 </div>
             </div>

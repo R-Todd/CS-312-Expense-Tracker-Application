@@ -1,99 +1,150 @@
-// root/server/routes/income.js
+// client/src/components/incomeForm.js
 
-// ======= IMPORTS =======
-const express = require('express');
-const router = express.Router(); // express router for defining routes
-const pool = require('../database/database'); // Database connection pool
-// authentication middleware
-const authMiddleware = require('../middleware/authMiddleware');
-// =====================
+// =========== IMPORTS ===========
+import React, { useState } from 'react';
+// styling
+import '../App.css';
+// ===============================
 
-// Routes pre-set with /api/income from server.js
+// IncomeForm component for adding new income entries
+const IncomeForm = ({ onIncomeAdded }) => {
 
-// | -------- Add Income Entry -------- |
-// @route   POST /api/income
-// @desc    Add a new income entry for the logged-in user
-// @access  Private (Requires token)
-// | ------------------------------- |
-router.post('/', authMiddleware, async (req, res) => {
-    try {
-        // get income data from request body
-        // Note: 'source' is used instead of 'category' for clarity
-        const { amount, source, date, description } = req.body;
+    // ==== State Variables ====
 
-        // get user id (from authMiddleware.js)
-        const userId = req.user.id;
+    // empty form data state to store inputs
+    const [formData, setFormData] = useState({
+        amount: '',
+        source: '', // Maps to 'source' column in DB
+        // default to today's date
+        date: new Date().toISOString().split('T')[0],
+        description: ''
+    });
 
-        // insert new income into database
-        const newIncome = await pool.query(
-            'INSERT INTO incomes (user_id, amount, source, date, description) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [userId, amount, source, date, description]
-        );
+    // store error messages
+    const [error, setError] = useState('');
 
-        // send obj back to client
-        res.json(newIncome.rows[0]);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
+    // break down formData for easier access
+    const { amount, source, date, description } = formData;
+    // =========================
 
-// | -------- Get All Income Entries -------- |
-// @route   GET /api/income
-// @desc    Get all income entries for the logged-in user
-// @access  Private (Requires token)
-// | ------------------------------- |
-router.get('/', authMiddleware, async (req, res) => {
-    try {
-        // get user id
-        const userId = req.user.id;
+    // ---- event handlers ----
 
-        // select all incomes for this user, ordered by date
-        const incomes = await pool.query(
-            'SELECT * FROM incomes WHERE user_id = $1 ORDER BY date DESC',
-            [userId]
-        );
+    // onChange, called every time a user types in a input feild
+    const onChange = (event) => {
+        setFormData({ ...formData, [event.target.name]: event.target.value });
+    };
 
-        // send incomes into array and back to client
-        res.json(incomes.rows);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
+    // onSubmit, called when user submits the form
+    const onSubmit = async (event) => {
+        // prevent HTML submission
+        event.preventDefault();
 
-// | -------- Delete Income Entry -------- |
-// @route   DELETE /api/income/:id
-// @desc    Delete a specific income entry by ID
-// @access  Private (Requires token)
-// | ------------------------------- |
-router.delete('/:id', authMiddleware, async (req, res) => {
-    try {
-        // get "income id" from url params
-        const { id } = req.params;
-        // get user id
-        const userId = req.user.id;
+        // clear prev errors
+        setError('');
 
-        // delete from database -- must check BOTH income id and user id
-        const deleteIncome = await pool.query(
-            "DELETE FROM incomes WHERE income_id = $1 AND user_id = $2 RETURNING *",
-            [id, userId]
-        );
+        // try block
+        try {
+            // get token from local storage
+            const token = localStorage.getItem('token');
 
-        // if no rows were deleted (not found or not authorized)
-        if (deleteIncome.rows.length === 0) {
-            return res.status(404).json({ error: 'Income not found for user / not authorized' });
+            // check if token is found from above
+            if (!token) {
+                setError('No token found, please log in');
+                return;
+            }
+
+            // --- api call ---
+            // send form data to "/api/income" endpoint
+            const response = await fetch('/api/income', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // x-auth-token header (from authMiddleware.js)
+                    'x-auth-token': token
+                },
+                // convert js object to JSON string
+                body: JSON.stringify({
+                    amount: parseFloat(amount),
+                    source,
+                    date,
+                    description
+                })
+            });
+            // check for server error
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || 'Failed to add income');
+            }
+
+            // --- success ---
+            // 1) CLEAR form data
+            setFormData({
+                amount: '',
+                source: '',
+                date: new Date().toISOString().split('T')[0],
+                description: ''
+            });
+
+            // 2) call onIncomeAdded to update transaction list in dashboard
+            if (onIncomeAdded) {
+                onIncomeAdded();
+            }
+        } catch (err) {
+            // set error message
+            setError(err.message);
         }
+    };
+    // ========================
 
-        // send success message back to client
-        res.json({ message: 'Income deleted successfully' });
+    // ---- JSX Return ----
+    return (
+        // Use the new class 'income-form' for custom styling
+        <form className="expense-form income-form" onSubmit={onSubmit}>
+            <h3 className="income-title">Add New Income</h3> 
 
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
+            {error && <div className="error-message">{error}</div>}
 
+            <div className = "form-group">
+                <input
+                    type="number" 
+                    name="amount"
+                    value={amount} 
+                    onChange={onChange} 
+                    placeholder="Amount (ex: 1500.00)"
+                    required
+                />
+                <input
+                    type="text"
+                    name="source" 
+                    value={source}
+                    onChange={onChange}
+                    placeholder="Source (ex: Salary, Freelance)"
+                    required
+                />
+            </div>
 
-// Export the router to be used in server.js
-module.exports = router;
+            <div className = "form-group">
+                <input
+                    type="date"
+                    name="date"
+                    value={date}
+                    onChange={onChange}
+                    required
+                />
+                <input
+                    type="text"
+                    name="description"
+                    value={description}
+                    onChange={onChange}
+                    placeholder="Description (e.g. Monthly Paycheck)"
+                />
+            </div>
+
+            {/* Use the new class 'income-button' */}
+            <button type="submit" className="income-button">Add Income</button>
+        </form>
+    );
+    // ====================
+};
+
+export default IncomeForm;
