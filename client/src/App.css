@@ -222,7 +222,7 @@
 
 
 .custom-date-picker {
-  /*  styles from the other input fields */
+  /* styles from the other input fields */
   width: 100%;
   padding: 10px;
   border-radius: 4px;
@@ -287,5 +287,3 @@
 .transaction-list-column::-webkit-scrollbar-track {
   background: #333;
 }
-
-
