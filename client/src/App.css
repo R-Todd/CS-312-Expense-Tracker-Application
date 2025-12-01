@@ -162,8 +162,9 @@
   display: flex;
   justify-content: center;
   gap: 20px;
+  /* Increased max-width for 4 cards  */
   width: 90%;
-  max-width: 600px;
+  max-width: 800px; /* Increased from 600px */
   margin: 20px 0;
 }
 
@@ -212,3 +213,5 @@
   background-color: #3a3f4a;
   color: white;
 }
+
+
