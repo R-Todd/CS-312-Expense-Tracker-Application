@@ -8,7 +8,9 @@ const Predictions = ({ predictions }) => {
     if (!predictions || predictions.length === 0) return null;
 
     return (
-        <div className="expense-form" style={{ marginTop: '20px', border: '1px solid #61dafb' }}>
+        // FIX: Changed marginTop: '20px' to margin: '20px auto' 
+        // to center the component horizontally while keeping 20px top/bottom margin.
+        <div className="expense-form" style={{ margin: '20px auto', border: '1px solid #61dafb' }}>
             <h3 style={{ color: '#61dafb' }}>Spending Trends</h3>
             <p style={{ color: '#ccc', fontSize: '0.9rem', marginBottom: '15px' }}>
                 Based on your last 3 entries, here is what you might spend next:

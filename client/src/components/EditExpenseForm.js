@@ -1,5 +1,3 @@
-// r-todd/cs-312-expense-tracker-application/CS-312-Expense-Tracker-Application-Phase-2-with-Trend-Detection/client/src/components/EditExpenseForm.js
-
 // =========== IMPORTS ===========
 import React, { useState } from 'react';
 // NEW: Import the DatePicker library and CSS
@@ -9,8 +7,8 @@ import 'react-datepicker/dist/react-datepicker.css';
 import '../App.css';
 // ===============================
 
-// EditExpenseForm component for updating an existing expense
-// It receives the current expense data, a function to refresh the list, and a function to cancel the edit.
+
+//  receives the current expense data, a function to refresh the list, and a function to cancel the edit.
 const EditExpenseForm = ({ expense, onUpdate, onCancel }) => {
 
     // ==== State Variables ====
@@ -19,7 +17,7 @@ const EditExpenseForm = ({ expense, onUpdate, onCancel }) => {
     const [formData, setFormData] = useState({
         amount: expense.amount,
         category: expense.category,
-        // MODIFIED: Initialize date state with a Date object based on the expense date string
+        // edited for Date object
         date: new Date(expense.date), 
         description: expense.description || '' // Handle null description
     });
@@ -38,7 +36,7 @@ const EditExpenseForm = ({ expense, onUpdate, onCancel }) => {
         setFormData({ ...formData, [event.target.name]: event.target.value });
     };
     
-    // NEW: Custom handler for the date picker component
+    // custom handler for the date picker component
     const handleDateChange = (newDate) => {
         setFormData({ ...formData, date: newDate });
     };
