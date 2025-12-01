@@ -2,12 +2,12 @@
 
 // =========== IMPORTS ===========
 import React, { useState } from 'react';
-// NEW: Import the DatePicker library and CSS
+// DatePicker library and CSS
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css'; 
 // styling
 import '../App.css';
-// NEW: Import the centralized color map to populate the dropdown
+// colorpalette
 import { CATEGORY_COLORS } from '../utils/colorPalette'; 
 // ===============================
 
@@ -20,7 +20,7 @@ const ExpenseForm = ({ onExpenseAdded }) => {
     const [formData, setFormData] = useState({
         amount: '',
         category: '',
-        // MODIFIED: date state now stores a Date object, not an ISO string
+        //date stores a Date object, not an ISO string
         date: new Date(), 
         description: ''
     });
@@ -29,7 +29,7 @@ const ExpenseForm = ({ onExpenseAdded }) => {
     const [error, setError] = useState('');
 
     // break down formData for easier access
-    // MODIFIED: date is now an object
+    // !! date is now an object
     const { amount, category, date, description } = formData;
     // =========================
 
@@ -80,7 +80,7 @@ const ExpenseForm = ({ onExpenseAdded }) => {
                 body: JSON.stringify({
                     amount: parseFloat(amount),
                     category,
-                    // MODIFIED: Convert Date object to ISO string for the backend
+                    // date conversion for new API format
                     date: date.toISOString().split('T')[0], 
                     description
                 })
@@ -122,7 +122,6 @@ const ExpenseForm = ({ onExpenseAdded }) => {
             {error && <div className="error-message">{error}</div>}
 
             <div className = "form-group">
-                {/* FIX: ADDED style={{ flex: 1 }} to ensure equal sharing of space in the flex container */}
                 <input
                     type="number" // Must match the key in formData state
                     name="amount"
@@ -133,19 +132,18 @@ const ExpenseForm = ({ onExpenseAdded }) => {
                     style={{ flex: 1 }} 
                 />
                 
-                {/* MODIFIED: Category is now a SELECT dropdown */}
+                {/* dropdown for category*/}
                 <select
                     name="category"
                     value={category}
                     onChange={onChange}
                     required
-                    // Ensure the select box itself takes up half the container space
                     style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #555', backgroundColor: '#282c34', color: 'white', fontSize: '1rem', flex: 1 }} 
                 >
                     <option value="" disabled>Select Category</option>
-                    {/* Populate options from the centralized color map keys */}
+                    {/* Populate options from color map */}
                     {Object.keys(CATEGORY_COLORS).map(cat => (
-                        // Skip the 'Default' key, as it's only a fallback
+                        // Skip the Default key
                         cat !== 'Default' && (
                             <option key={cat} value={cat}>{cat}</option>
                         )
@@ -154,15 +152,13 @@ const ExpenseForm = ({ onExpenseAdded }) => {
             </div>
 
             <div className = "form-group">
-                {/* MODIFIED: Replaced input type="date" with DatePicker component */}
+                {/* Updated for DatePicker component */}
                 <DatePicker
-                    // The DatePicker component requires a Date object for its value
                     selected={date} 
                     onChange={handleDateChange} // Use the custom date handler
                     dateFormat="yyyy/MM/dd" // Display format for the user
                     placeholderText="Date"
                     required
-                    // Custom styling to make it look like the other inputs
                     className="custom-date-picker" 
                     id="expense-date"
                 />

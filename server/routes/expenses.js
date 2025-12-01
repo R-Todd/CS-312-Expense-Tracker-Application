@@ -5,17 +5,13 @@ const router = express.Router();
 const pool = require('../database/database');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// | -------- NEW: Get Spending Predictions (Trends) -------- |
+// | -------- Spending Predictions -------- |
 // Must be placed BEFORE any /:id routes
 router.get('/predictions', authMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;
 
-        // SQL Logic:
-        // 1. "Partition" expenses by category.
-        // 2. Sort them by date (newest first).
-        // 3. Take only the top 3 for each category.
-        // 4. Average them to get the prediction.
+
         const predictionQuery = `
             WITH RankedExpenses AS (
                 SELECT 
@@ -43,7 +39,7 @@ router.get('/predictions', authMiddleware, async (req, res) => {
     }
 });
 
-// | -------- Existing Routes Below -------- |
+// | -------- Create New Expense Entry (POST) -------- |
 
 router.post('/', authMiddleware, async (req, res) => {
     try {
@@ -60,6 +56,8 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 });
 
+// | -------- Get All Expense Entries for User (GET) -------- |
+
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -73,6 +71,8 @@ router.get('/', authMiddleware, async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+
+// | -------- Update Expense Entry (PUT route) -------- |
 
 router.put('/:id', authMiddleware, async (req, res) => {
     try {
@@ -93,6 +93,8 @@ router.put('/:id', authMiddleware, async (req, res) => {
     }
 });
 
+// | -------- Delete Expense Entry (DELETE) -------- |
+
 router.delete('/:id', authMiddleware, async (req, res) => {
     try {
         const { id } = req.params;
@@ -110,5 +112,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+
+
 
 module.exports = router;

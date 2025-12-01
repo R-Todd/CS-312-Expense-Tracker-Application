@@ -83,7 +83,7 @@ const EditSavingsForm = ({ savingsEntry, onUpdate, onCancel }) => {
 
     // ---- JSX Return ----
     return (
-        // Distinct color for Savings entries (same as the Add form)
+        // color for Savings entries (same as the Add form)
         <form className="expense-form" onSubmit={onSubmit} style={{ backgroundColor: '#2E4057', border: '2px solid #4BC0C0' }}>
             <h3 style={{ color: '#4BC0C0' }}>Edit Savings ID: {savingsEntry.savings_id}</h3>
 

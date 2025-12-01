@@ -16,7 +16,7 @@ const IncomeForm = ({ onIncomeAdded }) => {
     const [formData, setFormData] = useState({
         amount: '',
         source: '', 
-        // MODIFIED: date state now stores a Date object
+        //date stores a Date object
         date: new Date(), 
         description: ''
     });
@@ -25,7 +25,6 @@ const IncomeForm = ({ onIncomeAdded }) => {
     const [error, setError] = useState('');
 
     // break down formData for easier access
-    // MODIFIED: date is now an object
     const { amount, source, date, description } = formData;
     // =========================
 
@@ -39,7 +38,7 @@ const IncomeForm = ({ onIncomeAdded }) => {
         setFormData({ ...formData, [event.target.name]: event.target.value });
     };
     
-    // NEW: Custom handler for the date picker component
+    
     const handleDateChange = (newDate) => {
         setFormData({ ...formData, date: newDate });
     };
@@ -71,7 +70,7 @@ const IncomeForm = ({ onIncomeAdded }) => {
             }
 
             // --- api call ---
-            // send form data to "/api/income" endpoint
+            // send form data to /api/income 
             const response = await fetch('/api/income', {
                 method: 'POST',
                 headers: {
@@ -83,7 +82,6 @@ const IncomeForm = ({ onIncomeAdded }) => {
                 body: JSON.stringify({
                     amount: parseFloat(amount),
                     source,
-                    // MODIFIED: Convert Date object to ISO string for the backend
                     date: date.toISOString().split('T')[0], 
                     description
                 })
@@ -119,7 +117,6 @@ const IncomeForm = ({ onIncomeAdded }) => {
     // ---- JSX Return ----
     return (
         // attach onSubmit
-        // Added inline style to differentiate it from the ExpenseForm
         <form className="expense-form" onSubmit={onSubmit} style={{ backgroundColor: '#394A59' }}>
             <h3 style={{ color: '#A0D2EB' }}>Add New Income</h3>
 
@@ -145,7 +142,6 @@ const IncomeForm = ({ onIncomeAdded }) => {
             </div>
 
             <div className = "form-group">
-                {/* MODIFIED: Replaced input type="date" with DatePicker component */}
                 <DatePicker
                     selected={date} // The DatePicker component requires a Date object
                     onChange={handleDateChange} // Use the custom date handler

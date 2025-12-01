@@ -37,10 +37,10 @@ const Dashboard = () => {
     // store predictions
     const [predictions, setPredictions] = useState([]);
 
-    // State to track which entry is currently being edited
+    // STATE to track which entry is currently being edited
     const [editingExpenseId, setEditingExpenseId] = useState(null);
     const [editingIncomeId, setEditingIncomeId] = useState(null);
-    // NEW: State to track which savings entry is currently being edited
+    // STATE to track which savings entry is being edited
     const [editingSavingsId, setEditingSavingsId] = useState(null);
 
     // store loading errors
@@ -56,7 +56,7 @@ const Dashboard = () => {
     const [selectedMonth, setSelectedMonth] = useState('all');
     // =========================
 
-    // function for fetching data (expenses + predictions) from server
+    // function for (expenses + predictions) from server
     const fetchAllData = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -80,7 +80,7 @@ const Dashboard = () => {
             const incomeResponse = await fetch('/api/income', { method: 'GET', headers: headers });
             if (incomeResponse.ok) setIncome(await incomeResponse.json());
 
-            // --- 3. Savings (NEW) ---
+            // --- 3. Savings ---
             const savingsResponse = await fetch('/api/savings', { method: 'GET', headers: headers });
             if (savingsResponse.ok) setSavings(await savingsResponse.json());
 
@@ -95,7 +95,7 @@ const Dashboard = () => {
         }
     };
     
-    // NEW: Generic Delete Handler (Handles Expense, Income, and Savings)
+    // --------- generic delete Handler (Expense, Income, and Savings) ----------
     const handleDelete = async (type, id) => {
         if (!window.confirm(`Are you sure you want to delete this ${type} entry (ID: ${id})?`)) {
             return;
@@ -103,7 +103,7 @@ const Dashboard = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`/api/${type}s/${id}`, { // Builds the URL: /api/expenses/id, /api/income/id, or /api/savings/id
+            const response = await fetch(`/api/${type}s/${id}`, { // Builds the URL
                 method: 'DELETE',
                 headers: {
                     'x-auth-token': token
@@ -115,7 +115,7 @@ const Dashboard = () => {
                 throw new Error(errData.error || `Failed to delete ${type}`);
             }
 
-            // Success: Fetch all data again to update the lists and summaries
+            // Success: Refresh all data
             fetchAllData();
 
         } catch (err) {
@@ -157,7 +157,7 @@ const Dashboard = () => {
     ];
     // ========================
 
-    // ==== Filtered Lists (Remains the same) ====
+    // ==== Filtered Lists  ====
     const filteredExpenses = expenses.filter(expense => {
         const categoryMatch = !selectedCategory || expense.category === selectedCategory;
         const monthMatch = selectedMonth === 'all' || new Date(expense.date).getMonth() == selectedMonth; 
@@ -184,10 +184,10 @@ const Dashboard = () => {
             {/* --- expense summary --- */}
             <ExpenseSummary expenses={filteredExpenses} income={filteredIncome} savings={filteredSavings} />
 
-            {/* Predictions Component */}
+            {/* Predictions  */}
             <Predictions predictions={predictions} />
 
-            {/* Forms Container - Allows the three forms to sit side-by-side */}
+            {/* edited to fit expense list side by side */}
             <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', maxWidth: '1000px', width: '90%', margin: '0 auto 20px' }}>
                 
                 {/* Expense Form */}
@@ -214,13 +214,13 @@ const Dashboard = () => {
                 onCategorySelect={setSelectedCategory}
             />
             
-            {/* NEW: Bar Chart for Monthly Trends */}
+            {/* Bar Chart */}
             <ExpenseBarChart
                 expenses={expenses}
             />
 
 
-            {/* --- Filter controls are placed above the list containers --- */}
+            {/* --- Recent Transactions Section --- */}
             <h3 style={{ marginBottom: '10px', marginTop: '30px' }}>Recent Transactions</h3>
             <div className="filter-controls" style={{ margin: '0 auto 10px auto' }}> {/* Centering the filter controls */}
                 
@@ -253,7 +253,7 @@ const Dashboard = () => {
                 )}
             </div>
 
-            {/* --- NEW: Transaction Lists Container (3 Columns) --- */}
+            {/* --- Transactions -- 3 Columns --- */}
             <div className="recent-transactions-container">
                 
                 {/* EXPENSES COLUMN */}
@@ -396,7 +396,7 @@ const Dashboard = () => {
                         </ul>
                     )}
                 </div>
-            </div> {/* End of recent-transactions-container */}
+            </div> {/* End recent-transactions */}
 
 
         </div>

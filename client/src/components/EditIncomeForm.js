@@ -1,5 +1,3 @@
-// r-todd/cs-312-expense-tracker-application/CS-312-Expense-Tracker-Application-Phase-2-with-Trend-Detection/client/src/components/EditIncomeForm.js
-
 // =========== IMPORTS ===========
 import React, { useState } from 'react';
 // NEW: Import the DatePicker library and CSS
@@ -9,18 +7,17 @@ import 'react-datepicker/dist/react-datepicker.css';
 import '../App.css';
 // ===============================
 
-// EditIncomeForm component for updating an existing income entry
+// EditIncomeForm component to update existing income entry
 const EditIncomeForm = ({ incomeEntry, onUpdate, onCancel }) => {
 
     // ==== State Variables ====
 
-    // Initialize form data with the existing income details
+    // Set form data with the existing income details
     const [formData, setFormData] = useState({
         amount: incomeEntry.amount,
         source: incomeEntry.source,
-        // MODIFIED: Initialize date state with a Date object based on the income date string
         date: new Date(incomeEntry.date), 
-        description: incomeEntry.description || '' // Handle null description
+        description: incomeEntry.description || '' // handle null description
     });
 
     // store error messages
@@ -37,7 +34,7 @@ const EditIncomeForm = ({ incomeEntry, onUpdate, onCancel }) => {
         setFormData({ ...formData, [event.target.name]: event.target.value });
     };
     
-    // NEW: Custom handler for the date picker component
+    // date picker component
     const handleDateChange = (newDate) => {
         setFormData({ ...formData, date: newDate });
     };
@@ -68,7 +65,7 @@ const EditIncomeForm = ({ incomeEntry, onUpdate, onCancel }) => {
             }
 
             // --- api call (PUT request) ---
-            // Send form data to "/api/income/:id" endpoint
+            // Send form data to /api/income/:id
             const response = await fetch(`/api/income/${incomeEntry.income_id}`, {
                 method: 'PUT', // Use PUT method for updating
                 headers: {
@@ -80,7 +77,7 @@ const EditIncomeForm = ({ incomeEntry, onUpdate, onCancel }) => {
                 body: JSON.stringify({
                     amount: parseFloat(amount),
                     source,
-                    // MODIFIED: Convert Date object to ISO string for the backend
+                    // Convert Date object to ISO string for the backend
                     date: date.toISOString().split('T')[0],
                     description
                 })
@@ -122,7 +119,7 @@ const EditIncomeForm = ({ incomeEntry, onUpdate, onCancel }) => {
                 <input
                     type="number" 
                     name="amount"
-                    value= {amount} // Pre-populated from state
+                    value= {amount} // from state
                     onChange={onChange}
                     placeholder="Amount (ex: 1000.00)"
                     required
@@ -130,7 +127,7 @@ const EditIncomeForm = ({ incomeEntry, onUpdate, onCancel }) => {
                 <input
                     type="text"
                     name="source"
-                    value={source} // Pre-populated from state
+                    value={source} // from state
                     onChange={onChange}
                     placeholder="Source (ex: Salary, Freelance)"
                     required
@@ -138,7 +135,7 @@ const EditIncomeForm = ({ incomeEntry, onUpdate, onCancel }) => {
             </div>
 
             <div className = "form-group">
-                {/* MODIFIED: Replaced input type="date" with DatePicker component */}
+                {/* Replaced input type="date" with DatePicker component */}
                 <DatePicker
                     selected={date} 
                     onChange={handleDateChange} 
@@ -151,7 +148,7 @@ const EditIncomeForm = ({ incomeEntry, onUpdate, onCancel }) => {
                 <input
                     type="text"
                     name="description"
-                    value={description} // Pre-populated from state
+                    value={description} //from state
                     onChange={onChange}
                     placeholder="Description (ex: Monthly Paycheck) etc.)"
                 />

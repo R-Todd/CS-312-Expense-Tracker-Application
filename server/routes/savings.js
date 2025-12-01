@@ -5,14 +5,14 @@ const router = express.Router();
 const pool = require('../database/database');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// | -------- Create New Savings Entry (POST) -------- |
+// | -------- Create New Savings Entry -------- |
 router.post('/', authMiddleware, async (req, res) => {
     try {
-        // Get data from request body and user ID from token
+        // Get data from request body --  user ID from token
         const { amount, goal, date, description } = req.body;
         const userId = req.user.id;
 
-        // Insert new savings record into the database
+        // insert a new savings record into the database
         const newSavings = await pool.query(
             'INSERT INTO savings (user_id, amount, goal, date, description) VALUES ($1, $2, $3, $4, $5) RETURNING *',
             [userId, amount, goal, date, description]
@@ -24,11 +24,11 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 });
 
-// | -------- Get All Savings Entries for User (GET) -------- |
+// | -------- Get All Savings Entries for User -------- |
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;
-        // Fetch all savings entries, ordered by date descending
+        // get all savings entries, ordered by date
         const savings = await pool.query(
             'SELECT * FROM savings WHERE user_id = $1 ORDER BY date DESC',
             [userId]

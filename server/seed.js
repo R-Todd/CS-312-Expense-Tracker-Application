@@ -23,7 +23,6 @@ async function seedDatabase() {
     try {
         // --- 1. Clear existing data ---
         console.log('Clearing existing savings, income, and expense data...');
-        // Order matters: must delete from child tables before parent (users)
         await pool.query('DELETE FROM savings'); 
         await pool.query('DELETE FROM income'); 
         await pool.query('DELETE FROM expenses'); 
@@ -67,7 +66,7 @@ async function seedDatabase() {
             [userId, 1200.00, 'Rent', '2025-11-01', 'Monthly Rent Payment'],
             [userId, 350.00, 'Food', '2025-11-05', 'Large Grocery Trip'],
             [userId, 120.00, 'Transport', '2025-11-20', 'Car Maintenance'],
-            // December 2025 (Recent for predictions)
+            // December 2025
             [userId, 1200.00, 'Rent', '2025-12-01', 'Monthly Rent Payment'],
             [userId, 30.00, 'Food', '2025-12-08', 'Quick Lunch'],
             [userId, 60.00, 'Food', '2025-12-15', 'Weekly Coffee Runs'],

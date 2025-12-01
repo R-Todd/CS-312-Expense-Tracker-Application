@@ -8,7 +8,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import '../App.css';
 // ===============================
 
-// SavingsForm component for adding new savings entries
+// SavingsForm for adding new savings entries
 const SavingsForm = ({ onSavingsAdded }) => {
 
     // ==== State Variables ====
@@ -56,7 +56,7 @@ const SavingsForm = ({ onSavingsAdded }) => {
                 },
                 body: JSON.stringify({
                     amount: parseFloat(amount),
-                    goal, // Sending 'goal' instead of 'source'
+                    goal, 
                     date: date.toISOString().split('T')[0], 
                     description
                 })
@@ -86,7 +86,7 @@ const SavingsForm = ({ onSavingsAdded }) => {
 
     // ---- JSX Return ----
     return (
-        // Added distinct color for Savings entries
+        //color for Savings entries
         <form className="expense-form" onSubmit={onSubmit} style={{ backgroundColor: '#3C4D58', border: '1px solid #4BC0C0' }}>
             <h3 style={{ color: '#4BC0C0' }}>Add New Savings</h3>
 
@@ -103,7 +103,7 @@ const SavingsForm = ({ onSavingsAdded }) => {
                 />
                 <input
                     type="text"
-                    name="goal" // Use 'goal' field for savings category
+                    name="goal" 
                     value={goal}
                     onChange={onChange}
                     placeholder="Goal (ex: Vacation, Emergency)"

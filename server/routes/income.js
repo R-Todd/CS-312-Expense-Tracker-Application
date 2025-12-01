@@ -8,7 +8,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 // | -------- Create New Income Entry (POST) -------- |
 router.post('/', authMiddleware, async (req, res) => {
     try {
-        // Get data from request body and user ID from token
+        // data from request body and user ID from token
         const { amount, source, date, description } = req.body;
         const userId = req.user.id;
 
@@ -28,7 +28,7 @@ router.post('/', authMiddleware, async (req, res) => {
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;
-        // Fetch all income entries, ordered by date descending
+        // get all income entries, ordered by date
         const income = await pool.query(
             'SELECT * FROM income WHERE user_id = $1 ORDER BY date DESC',
             [userId]
@@ -40,8 +40,7 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 });
 
-// | -------- Future: Update Income Entry (PUT route) -------- |
-// Included for completeness, similar to expenses.
+// | -------- Update Income Entry (PUT route) -------- |
 router.put('/:id', authMiddleware, async (req, res) => {
     try {
         const { amount, source, date, description } = req.body;
@@ -61,7 +60,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     }
 });
 
-// | -------- Future: Delete Income Entry (DELETE route) -------- |
+// | -------- Delete Income Entry  -------- |
 router.delete('/:id', authMiddleware, async (req, res) => {
     try {
         const { id } = req.params;

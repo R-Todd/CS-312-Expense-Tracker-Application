@@ -66,10 +66,10 @@ const EditExpenseForm = ({ expense, onUpdate, onCancel }) => {
                 return;
             }
 
-            // --- api call (PUT request) ---
-            // Send form data to "/api/expenses/:id" endpoint
+            // --- api call (PUT request) --
+            // Send form data to /api/expenses/:id
             const response = await fetch(`/api/expenses/${expense.expense_id}`, {
-                method: 'PUT', // Use PUT method for updating
+                method: 'PUT', // use PUT method for updating
                 headers: {
                     'Content-Type': 'application/json',
                     // x-auth-token header (from authMiddleware.js)
@@ -79,7 +79,7 @@ const EditExpenseForm = ({ expense, onUpdate, onCancel }) => {
                 body: JSON.stringify({
                     amount: parseFloat(amount),
                     category,
-                    // MODIFIED: Convert Date object to ISO string for the backend
+                    // Convert Date object to ISO string for the backend
                     date: date.toISOString().split('T')[0],
                     description
                 })
@@ -121,7 +121,7 @@ const EditExpenseForm = ({ expense, onUpdate, onCancel }) => {
                 <input
                     type="number" 
                     name="amount"
-                    value= {amount} // Pre-populated from state
+                    value= {amount} // Pre-loaded from state
                     onChange={onChange}
                     placeholder="Amount (ex: 12.34)"
                     required
@@ -129,7 +129,7 @@ const EditExpenseForm = ({ expense, onUpdate, onCancel }) => {
                 <input
                     type="text"
                     name="category"
-                    value={category} // Pre-populated from state
+                    value={category} // Pre-loaded from state
                     onChange={onChange}
                     placeholder="Category (ex: Food, Transport)"
                     required
@@ -137,7 +137,6 @@ const EditExpenseForm = ({ expense, onUpdate, onCancel }) => {
             </div>
 
             <div className = "form-group">
-                {/* MODIFIED: Replaced input type="date" with DatePicker component */}
                 <DatePicker
                     selected={date} 
                     onChange={handleDateChange} 
@@ -150,7 +149,7 @@ const EditExpenseForm = ({ expense, onUpdate, onCancel }) => {
                 <input
                     type="text"
                     name="description"
-                    value={description} // Pre-populated from state
+                    value={description} // Pre-loaded from state
                     onChange={onChange}
                     placeholder="Description (ex: Lunch, Taxi) etc.)"
                 />
