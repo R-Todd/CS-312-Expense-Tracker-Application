@@ -1,3 +1,4 @@
+// client/src/components/expenseForm.js
 
 // =========== IMPORTS ===========
 import React, { useState } from 'react';
@@ -6,6 +7,8 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css'; 
 // styling
 import '../App.css';
+// NEW: Import the centralized color map to populate the dropdown
+import { CATEGORY_COLORS } from '../utils/colorPalette'; 
 // ===============================
 
 // ExpenseForm component for adding new expenses
@@ -119,6 +122,7 @@ const ExpenseForm = ({ onExpenseAdded }) => {
             {error && <div className="error-message">{error}</div>}
 
             <div className = "form-group">
+                {/* FIX: ADDED style={{ flex: 1 }} to ensure equal sharing of space in the flex container */}
                 <input
                     type="number" // Must match the key in formData state
                     name="amount"
@@ -126,15 +130,27 @@ const ExpenseForm = ({ onExpenseAdded }) => {
                     onChange={onChange} // attach onChange handler
                     placeholder="Amount (ex: 12.34)"
                     required
+                    style={{ flex: 1 }} 
                 />
-                <input
-                    type="text"
+                
+                {/* MODIFIED: Category is now a SELECT dropdown */}
+                <select
                     name="category"
                     value={category}
                     onChange={onChange}
-                    placeholder="Category (ex: Food, Transport)"
                     required
-                />
+                    // Ensure the select box itself takes up half the container space
+                    style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #555', backgroundColor: '#282c34', color: 'white', fontSize: '1rem', flex: 1 }} 
+                >
+                    <option value="" disabled>Select Category</option>
+                    {/* Populate options from the centralized color map keys */}
+                    {Object.keys(CATEGORY_COLORS).map(cat => (
+                        // Skip the 'Default' key, as it's only a fallback
+                        cat !== 'Default' && (
+                            <option key={cat} value={cat}>{cat}</option>
+                        )
+                    ))}
+                </select>
             </div>
 
             <div className = "form-group">
