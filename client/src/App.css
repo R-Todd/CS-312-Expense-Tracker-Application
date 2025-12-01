@@ -214,4 +214,24 @@
   color: white;
 }
 
+/* === Date Picker === */
+.month-filter option {
+  background-color: #3a3f4a;
+  color: white;
+}
+
+
+.custom-date-picker {
+  /*  styles from the other input fields */
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background-color: #282c34;
+  color: white;
+  font-size: 1rem;
+  box-sizing: border-box;
+  text-align: center;
+}
+
 

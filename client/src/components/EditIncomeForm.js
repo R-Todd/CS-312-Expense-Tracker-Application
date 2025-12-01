@@ -1,7 +1,10 @@
-// client/src/components/EditIncomeForm.js
+// r-todd/cs-312-expense-tracker-application/CS-312-Expense-Tracker-Application-Phase-2-with-Trend-Detection/client/src/components/EditIncomeForm.js
 
 // =========== IMPORTS ===========
 import React, { useState } from 'react';
+// NEW: Import the DatePicker library and CSS
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css'; 
 // styling
 import '../App.css';
 // ===============================
@@ -15,8 +18,8 @@ const EditIncomeForm = ({ incomeEntry, onUpdate, onCancel }) => {
     const [formData, setFormData] = useState({
         amount: incomeEntry.amount,
         source: incomeEntry.source,
-        // Format the date correctly for the input field (YYYY-MM-DD)
-        date: new Date(incomeEntry.date).toISOString().split('T')[0], 
+        // MODIFIED: Initialize date state with a Date object based on the income date string
+        date: new Date(incomeEntry.date), 
         description: incomeEntry.description || '' // Handle null description
     });
 
@@ -32,6 +35,11 @@ const EditIncomeForm = ({ incomeEntry, onUpdate, onCancel }) => {
     // onChange, called every time a user types in an input field
     const onChange = (event) => {
         setFormData({ ...formData, [event.target.name]: event.target.value });
+    };
+    
+    // NEW: Custom handler for the date picker component
+    const handleDateChange = (newDate) => {
+        setFormData({ ...formData, date: newDate });
     };
 
     // onSubmit, called when user submits the form
@@ -72,7 +80,8 @@ const EditIncomeForm = ({ incomeEntry, onUpdate, onCancel }) => {
                 body: JSON.stringify({
                     amount: parseFloat(amount),
                     source,
-                    date,
+                    // MODIFIED: Convert Date object to ISO string for the backend
+                    date: date.toISOString().split('T')[0],
                     description
                 })
             });
@@ -129,12 +138,15 @@ const EditIncomeForm = ({ incomeEntry, onUpdate, onCancel }) => {
             </div>
 
             <div className = "form-group">
-                <input
-                    type="date"
-                    name="date"
-                    value={date} // Pre-populated from state
-                    onChange={onChange}
+                {/* MODIFIED: Replaced input type="date" with DatePicker component */}
+                <DatePicker
+                    selected={date} 
+                    onChange={handleDateChange} 
+                    dateFormat="yyyy/MM/dd"
+                    placeholderText="Date"
                     required
+                    className="custom-date-picker" 
+                    id={`edit-income-date-${incomeEntry.income_id}`}
                 />
                 <input
                     type="text"

@@ -1,7 +1,9 @@
-// client/src/components/expenseForm.js
 
 // =========== IMPORTS ===========
 import React, { useState } from 'react';
+// NEW: Import the DatePicker library and CSS
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css'; 
 // styling
 import '../App.css';
 // ===============================
@@ -15,8 +17,8 @@ const ExpenseForm = ({ onExpenseAdded }) => {
     const [formData, setFormData] = useState({
         amount: '',
         category: '',
-        // default to today's date
-        date: new Date().toISOString().split('T')[0],
+        // MODIFIED: date state now stores a Date object, not an ISO string
+        date: new Date(), 
         description: ''
     });
 
@@ -24,6 +26,7 @@ const ExpenseForm = ({ onExpenseAdded }) => {
     const [error, setError] = useState('');
 
     // break down formData for easier access
+    // MODIFIED: date is now an object
     const { amount, category, date, description } = formData;
     // =========================
 
@@ -35,6 +38,11 @@ const ExpenseForm = ({ onExpenseAdded }) => {
         //event.target.name' is the 'name' from input
         // event.target.value' is the value user typed in
         setFormData({ ...formData, [event.target.name]: event.target.value });
+    };
+    
+    // NEW: Custom handler for the date picker component
+    const handleDateChange = (newDate) => {
+        setFormData({ ...formData, date: newDate });
     };
 
     // onSubmit, called when user submits the form
@@ -69,7 +77,8 @@ const ExpenseForm = ({ onExpenseAdded }) => {
                 body: JSON.stringify({
                     amount: parseFloat(amount),
                     category,
-                    date,
+                    // MODIFIED: Convert Date object to ISO string for the backend
+                    date: date.toISOString().split('T')[0], 
                     description
                 })
             });
@@ -84,7 +93,8 @@ const ExpenseForm = ({ onExpenseAdded }) => {
             setFormData({
                 amount: '',
                 category: '',
-                date: new Date().toISOString().split('T')[0],
+                // Reset to today's date (as a Date object)
+                date: new Date(), 
                 description: ''
             });
 
@@ -128,12 +138,17 @@ const ExpenseForm = ({ onExpenseAdded }) => {
             </div>
 
             <div className = "form-group">
-                <input
-                    type="date"
-                    name="date"
-                    value={date}
-                    onChange={onChange}
+                {/* MODIFIED: Replaced input type="date" with DatePicker component */}
+                <DatePicker
+                    // The DatePicker component requires a Date object for its value
+                    selected={date} 
+                    onChange={handleDateChange} // Use the custom date handler
+                    dateFormat="yyyy/MM/dd" // Display format for the user
+                    placeholderText="Date"
                     required
+                    // Custom styling to make it look like the other inputs
+                    className="custom-date-picker" 
+                    id="expense-date"
                 />
                 <input
                     type="text"
