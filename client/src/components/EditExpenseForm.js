@@ -1,60 +1,59 @@
-// client/src/components/expenseForm.js
-
 // =========== IMPORTS ===========
 import React, { useState } from 'react';
-// DatePicker library and CSS
+// NEW: Import the DatePicker library and CSS
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css'; 
 // styling
 import '../App.css';
-// colorpalette
-import { CATEGORY_COLORS } from '../utils/colorPalette'; 
 // ===============================
 
-// ExpenseForm component for adding new expenses
-const ExpenseForm = ({ onExpenseAdded }) => {
+
+//  receives the current expense data, a function to refresh the list, and a function to cancel the edit.
+const EditExpenseForm = ({ expense, onUpdate, onCancel }) => {
 
     // ==== State Variables ====
 
-    // empty form data state to store inputs
+    // Initialize form data with the existing expense details
     const [formData, setFormData] = useState({
-        amount: '',
-        category: '',
-        //date stores a Date object, not an ISO string
-        date: new Date(), 
-        description: ''
+        amount: expense.amount,
+        category: expense.category,
+        // edited for Date object
+        date: new Date(expense.date), 
+        description: expense.description || '' // Handle null description
     });
 
     // store error messages
     const [error, setError] = useState('');
 
     // break down formData for easier access
-    // !! date is now an object
     const { amount, category, date, description } = formData;
     // =========================
 
     // ---- event handlers ----
 
-    // onChange, called every time a user types in a input feild
+    // onChange, called every time a user types in an input field
     const onChange = (event) => {
-        // similar to login.js and register.js
-        //event.target.name' is the 'name' from input
-        // event.target.value' is the value user typed in
         setFormData({ ...formData, [event.target.name]: event.target.value });
     };
     
-    // NEW: Custom handler for the date picker component
+    // custom handler for the date picker component
     const handleDateChange = (newDate) => {
         setFormData({ ...formData, date: newDate });
     };
 
     // onSubmit, called when user submits the form
     const onSubmit = async (event) => {
-        // prevent HTML submissionas
+        // prevent HTML submission
         event.preventDefault();
 
         // clear prev errors
         setError('');
+
+        // Basic validation for amount
+        if (parseFloat(amount) <= 0) {
+            setError('Amount must be positive');
+            return;
+        }
 
         // try block
         try {
@@ -67,10 +66,10 @@ const ExpenseForm = ({ onExpenseAdded }) => {
                 return;
             }
 
-            // --- api call ---
-            // send form data to "/api/expenses" endpoint
-            const response = await fetch('/api/expenses', {
-                method: 'POST',
+            // --- api call (PUT request) --
+            // Send form data to /api/expenses/:id
+            const response = await fetch(`/api/expenses/${expense.expense_id}`, {
+                method: 'PUT', // use PUT method for updating
                 headers: {
                     'Content-Type': 'application/json',
                     // x-auth-token header (from authMiddleware.js)
@@ -80,32 +79,29 @@ const ExpenseForm = ({ onExpenseAdded }) => {
                 body: JSON.stringify({
                     amount: parseFloat(amount),
                     category,
-                    // date conversion for new API format
-                    date: date.toISOString().split('T')[0], 
+                    // Convert Date object to ISO string for the backend
+                    date: date.toISOString().split('T')[0],
                     description
                 })
             });
+            
             // check for server error
             if (!response.ok) {
                 const errData = await response.json();
-                throw new Error(errData.error || 'Failed to add expense');
+                throw new Error(errData.error || 'Failed to update expense');
             }
 
             // --- success ---
-            // 1) CLEAR form data
-            setFormData({
-                amount: '',
-                category: '',
-                // Reset to today's date (as a Date object)
-                date: new Date(), 
-                description: ''
-            });
-
-            // 2) call onExpenseAdded to update expense list in dashboard
-            // re fetch to add new list item
-            if (onExpenseAdded) {
-                onExpenseAdded();
+            // 1) Call onUpdate to refresh the list in the dashboard
+            if (onUpdate) {
+                onUpdate();
             }
+
+            // 2) Close the edit form
+            if (onCancel) {
+                onCancel();
+            }
+
         } catch (err) {
             // set error message
             setError(err.message);
@@ -116,65 +112,62 @@ const ExpenseForm = ({ onExpenseAdded }) => {
     // ---- JSX Return ----
     return (
         // attach onSubmit
-        <form className="expense-form" onSubmit={onSubmit}>
-            <h3>Add New Expense</h3>
+        <form className="expense-form" onSubmit={onSubmit} style={{ backgroundColor: '#584C3C', border: '2px solid #FFCE56' }}>
+            <h3 style={{ color: '#FFCE56' }}>Edit Expense ID: {expense.expense_id}</h3>
 
             {error && <div className="error-message">{error}</div>}
 
             <div className = "form-group">
                 <input
-                    type="number" // Must match the key in formData state
+                    type="number" 
                     name="amount"
-                    value= {amount} // from state
-                    onChange={onChange} // attach onChange handler
+                    value= {amount} // Pre-loaded from state
+                    onChange={onChange}
                     placeholder="Amount (ex: 12.34)"
                     required
-                    style={{ flex: 1 }} 
                 />
-                
-                {/* dropdown for category*/}
-                <select
+                <input
+                    type="text"
                     name="category"
-                    value={category}
+                    value={category} // Pre-loaded from state
                     onChange={onChange}
+                    placeholder="Category (ex: Food, Transport)"
                     required
-                    style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #555', backgroundColor: '#282c34', color: 'white', fontSize: '1rem', flex: 1 }} 
-                >
-                    <option value="" disabled>Select Category</option>
-                    {/* Populate options from color map */}
-                    {Object.keys(CATEGORY_COLORS).map(cat => (
-                        // Skip the Default key
-                        cat !== 'Default' && (
-                            <option key={cat} value={cat}>{cat}</option>
-                        )
-                    ))}
-                </select>
+                />
             </div>
 
             <div className = "form-group">
-                {/* Updated for DatePicker component */}
                 <DatePicker
                     selected={date} 
-                    onChange={handleDateChange} // Use the custom date handler
-                    dateFormat="yyyy/MM/dd" // Display format for the user
+                    onChange={handleDateChange} 
+                    dateFormat="yyyy/MM/dd"
                     placeholderText="Date"
                     required
                     className="custom-date-picker" 
-                    id="expense-date"
+                    id={`edit-expense-date-${expense.expense_id}`}
                 />
                 <input
                     type="text"
                     name="description"
-                    value={description}
+                    value={description} // Pre-loaded from state
                     onChange={onChange}
                     placeholder="Description (ex: Lunch, Taxi) etc.)"
                 />
             </div>
-
-            <button type="submit">Add Expense</button>
+            
+            <div className="form-group" style={{ gap: '10px' }}>
+                <button type="submit" style={{ flex: 2, background: '#FFCE56' }}>Save Changes</button>
+                <button 
+                    type="button" 
+                    onClick={onCancel} 
+                    style={{ flex: 1, background: '#FF6384' }}
+                >
+                    Cancel
+                </button>
+            </div>
         </form>
     );
     // ====================
 };
 
-export default ExpenseForm;
+export default EditExpenseForm;

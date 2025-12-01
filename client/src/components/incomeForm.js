@@ -1,26 +1,22 @@
-// client/src/components/expenseForm.js
-
 // =========== IMPORTS ===========
 import React, { useState } from 'react';
-// DatePicker library and CSS
+// NEW: Import the DatePicker library and CSS
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css'; 
 // styling
 import '../App.css';
-// colorpalette
-import { CATEGORY_COLORS } from '../utils/colorPalette'; 
 // ===============================
 
-// ExpenseForm component for adding new expenses
-const ExpenseForm = ({ onExpenseAdded }) => {
+// IncomeForm component for adding new income
+const IncomeForm = ({ onIncomeAdded }) => {
 
     // ==== State Variables ====
 
     // empty form data state to store inputs
     const [formData, setFormData] = useState({
         amount: '',
-        category: '',
-        //date stores a Date object, not an ISO string
+        source: '', 
+        //date stores a Date object
         date: new Date(), 
         description: ''
     });
@@ -29,8 +25,7 @@ const ExpenseForm = ({ onExpenseAdded }) => {
     const [error, setError] = useState('');
 
     // break down formData for easier access
-    // !! date is now an object
-    const { amount, category, date, description } = formData;
+    const { amount, source, date, description } = formData;
     // =========================
 
     // ---- event handlers ----
@@ -43,10 +38,11 @@ const ExpenseForm = ({ onExpenseAdded }) => {
         setFormData({ ...formData, [event.target.name]: event.target.value });
     };
     
-    // NEW: Custom handler for the date picker component
+    
     const handleDateChange = (newDate) => {
         setFormData({ ...formData, date: newDate });
     };
+
 
     // onSubmit, called when user submits the form
     const onSubmit = async (event) => {
@@ -55,6 +51,12 @@ const ExpenseForm = ({ onExpenseAdded }) => {
 
         // clear prev errors
         setError('');
+
+        // Basic validation for amount
+        if (parseFloat(amount) <= 0) {
+            setError('Amount must be positive');
+            return;
+        }
 
         // try block
         try {
@@ -68,8 +70,8 @@ const ExpenseForm = ({ onExpenseAdded }) => {
             }
 
             // --- api call ---
-            // send form data to "/api/expenses" endpoint
-            const response = await fetch('/api/expenses', {
+            // send form data to /api/income 
+            const response = await fetch('/api/income', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -79,8 +81,7 @@ const ExpenseForm = ({ onExpenseAdded }) => {
                 // convert js object to JSON string
                 body: JSON.stringify({
                     amount: parseFloat(amount),
-                    category,
-                    // date conversion for new API format
+                    source,
                     date: date.toISOString().split('T')[0], 
                     description
                 })
@@ -88,23 +89,23 @@ const ExpenseForm = ({ onExpenseAdded }) => {
             // check for server error
             if (!response.ok) {
                 const errData = await response.json();
-                throw new Error(errData.error || 'Failed to add expense');
+                throw new Error(errData.error || 'Failed to add income');
             }
 
             // --- success ---
             // 1) CLEAR form data
             setFormData({
                 amount: '',
-                category: '',
+                source: '',
                 // Reset to today's date (as a Date object)
-                date: new Date(), 
+                date: new Date(),
                 description: ''
             });
 
-            // 2) call onExpenseAdded to update expense list in dashboard
+            // 2) call onIncomeAdded to update income list in dashboard
             // re fetch to add new list item
-            if (onExpenseAdded) {
-                onExpenseAdded();
+            if (onIncomeAdded) {
+                onIncomeAdded();
             }
         } catch (err) {
             // set error message
@@ -116,8 +117,8 @@ const ExpenseForm = ({ onExpenseAdded }) => {
     // ---- JSX Return ----
     return (
         // attach onSubmit
-        <form className="expense-form" onSubmit={onSubmit}>
-            <h3>Add New Expense</h3>
+        <form className="expense-form" onSubmit={onSubmit} style={{ backgroundColor: '#394A59' }}>
+            <h3 style={{ color: '#A0D2EB' }}>Add New Income</h3>
 
             {error && <div className="error-message">{error}</div>}
 
@@ -127,54 +128,43 @@ const ExpenseForm = ({ onExpenseAdded }) => {
                     name="amount"
                     value= {amount} // from state
                     onChange={onChange} // attach onChange handler
-                    placeholder="Amount (ex: 12.34)"
+                    placeholder="Amount (ex: 1000.00)"
                     required
-                    style={{ flex: 1 }} 
                 />
-                
-                {/* dropdown for category*/}
-                <select
-                    name="category"
-                    value={category}
+                <input
+                    type="text"
+                    name="source"
+                    value={source}
                     onChange={onChange}
+                    placeholder="Source (ex: Salary, Freelance)"
                     required
-                    style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #555', backgroundColor: '#282c34', color: 'white', fontSize: '1rem', flex: 1 }} 
-                >
-                    <option value="" disabled>Select Category</option>
-                    {/* Populate options from color map */}
-                    {Object.keys(CATEGORY_COLORS).map(cat => (
-                        // Skip the Default key
-                        cat !== 'Default' && (
-                            <option key={cat} value={cat}>{cat}</option>
-                        )
-                    ))}
-                </select>
+                />
             </div>
 
             <div className = "form-group">
-                {/* Updated for DatePicker component */}
                 <DatePicker
-                    selected={date} 
+                    selected={date} // The DatePicker component requires a Date object
                     onChange={handleDateChange} // Use the custom date handler
-                    dateFormat="yyyy/MM/dd" // Display format for the user
+                    dateFormat="yyyy/MM/dd"
                     placeholderText="Date"
                     required
+                    // Custom styling to make it look like the other inputs
                     className="custom-date-picker" 
-                    id="expense-date"
+                    id="income-date"
                 />
                 <input
                     type="text"
                     name="description"
                     value={description}
                     onChange={onChange}
-                    placeholder="Description (ex: Lunch, Taxi) etc.)"
+                    placeholder="Description (ex: Monthly Paycheck) etc.)"
                 />
             </div>
 
-            <button type="submit">Add Expense</button>
+            <button type="submit" style={{ background: '#A0D2EB' }}>Add Income</button>
         </form>
     );
     // ====================
 };
 
-export default ExpenseForm;
+export default IncomeForm;

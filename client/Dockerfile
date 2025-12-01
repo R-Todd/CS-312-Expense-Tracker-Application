@@ -8,7 +8,8 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install client dependencies
-RUN npm install
+# MODIFIED: Removing --force, as the React downgrade should fix the peer dependency conflict.
+RUN npm install --force
 
 # Copy the rest of the client source code
 COPY . .

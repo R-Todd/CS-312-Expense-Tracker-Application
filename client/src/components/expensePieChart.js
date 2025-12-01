@@ -6,6 +6,9 @@ import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { getElementAtEvent } from 'react-chartjs-2';
 
+// MODIFIED: Import BOTH the map and the array (the map is used for strict color matching)
+import { CATEGORY_COLORS, BACKGROUND_COLOR_ARRAY } from '../utils/colorPalette';
+
 // Register the components Chart.js needs
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -27,31 +30,40 @@ const ExpensePieChart = ({ expenses, onCategorySelect }) => {
         return acc;
     }, {}); // Start with an empty object
 
-    // --- 2. Format data for Chart.js ---
+    // --- 2. Format data for Chart.js (FIXED FOR COLOR CONSISTENCY) ---
+    // FIX: Generate arrays for labels, data, and colors in a synchronized way 
+    // using the CATEGORY_COLORS map to ensure consistent color assignment regardless of iteration order.
+    
+    // Sort keys to maintain a consistent rendering order, although direct color mapping is the main fix.
+    const categories = Object.keys(categoryTotals).sort(); 
+    
+    const labels = [];
+    const data = [];
+    const backgroundColors = [];
+
+    categories.forEach(category => {
+        // Skip the 'Default' key if it somehow ends up in the totals object
+        if (category === 'Default') return;
+
+        labels.push(category);
+        data.push(categoryTotals[category]);
+        
+        // CRITICAL FIX: Use the CATEGORY_COLORS map to get the exact color for the category, 
+        // ensuring consistency with the Bar Chart and avoiding array index mismatch.
+        backgroundColors.push(CATEGORY_COLORS[category] || CATEGORY_COLORS['Default']);
+    });
+
     const chartData = {
-        // The labels for the chart (e.g., [Food, Transport, Coffee])
-        labels: Object.keys(categoryTotals),
+        // Use the consistently ordered labels array
+        labels: labels,
         datasets: [
             {
                 label: 'Expenses by Category',
-                // The values for the chart 
-                data: Object.values(categoryTotals),
-                backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF',
-                    '#FF9F40'
-                ],
-                hoverBackgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF',
-                    '#FF9F40'
-                ],
+                // Use the consistently ordered data array
+                data: data,
+                // Use the explicitly mapped background colors array
+                backgroundColor: backgroundColors,
+                hoverBackgroundColor: backgroundColors,
                 borderColor: '#282c34',
                 borderWidth: 2,
             },

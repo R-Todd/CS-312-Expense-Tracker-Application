@@ -1,31 +1,54 @@
-// server/middleware/authMiddleware.js
+// server/routes/expenses.js
 
-// ======= IMPORTS =======
 const express = require('express');
 const router = express.Router();
-// pool for db access
 const pool = require('../database/database');
-// authentication middleware
 const authMiddleware = require('../middleware/authMiddleware');
-// =====================
 
-// routes pre-set with /api/expenses from server.js
+// | -------- Spending Predictions -------- |
+// Must be placed BEFORE any /:id routes
+router.get('/predictions', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+
+        const predictionQuery = `
+            WITH RankedExpenses AS (
+                SELECT 
+                    category,
+                    amount,
+                    ROW_NUMBER() OVER (PARTITION BY category ORDER BY date DESC) as rn
+                FROM expenses
+                WHERE user_id = $1
+            )
+            SELECT 
+                category, 
+                ROUND(AVG(amount), 2) as predicted_amount
+            FROM RankedExpenses
+            WHERE rn <= 3
+            GROUP BY category
+            HAVING COUNT(*) >= 3; -- Only predict if we have 3 or more entries
+        `;
+
+        const result = await pool.query(predictionQuery, [userId]);
+        res.json(result.rows);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error fetching predictions' });
+    }
+});
+
+// | -------- Create New Expense Entry (POST) -------- |
 
 router.post('/', authMiddleware, async (req, res) => {
     try {
-        // get expense data from request body
         const { amount, category, date, description } = req.body;
-
-        // get user id (from /routes/authMiddleware.js)
         const userId = req.user.id;
-
-        // insert new expense into database
         const newExpense = await pool.query(
             'INSERT INTO expenses (user_id, amount, category, date, description) VALUES ($1, $2, $3, $4, $5) RETURNING *',
             [userId, amount, category, date, description]
         );
-
-        // send obj back to client
         res.json(newExpense.rows[0]);
     } catch (err) {
         console.error(err.message);
@@ -33,19 +56,15 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 });
 
-// GET all expenses for logged-in user
+// | -------- Get All Expense Entries for User (GET) -------- |
+
 router.get('/', authMiddleware, async (req, res) => {
     try {
-        // get user id - same as above
         const userId = req.user.id;
-
-        // select all expenses for this user - when user_id matches
         const expenses = await pool.query(
             'SELECT * FROM expenses WHERE user_id = $1 ORDER BY date DESC',
             [userId]
         );
-
-        // send expenses into array and back to client
         res.json(expenses.rows);
     } catch (err) {
         console.error(err.message);
@@ -53,63 +72,41 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 });
 
-// ============Update 1 of the usere's expenses=============
+// | -------- Update Expense Entry (PUT route) -------- |
+
 router.put('/:id', authMiddleware, async (req, res) => {
     try {
-        // data from req body
         const { amount, category, date, description } = req.body;
-
-        // get "expense id" from url params
         const { id } = req.params;
-
-        // get user id - same as above
         const userId = req.user.id;
-
-        // update database -- !! only if user_id and expense id match
         const updateExpense = await pool.query(
             "UPDATE expenses SET amount = $1, category = $2, date = $3, description = $4 WHERE expense_id = $5 AND user_id = $6 RETURNING *",
             [amount, category, date, description, id, userId]
         );
-
-        // if no rows were updates
-        //      - either expense id is wrong or it doesn't belong to this user
         if (updateExpense.rows.length === 0) {
-            return res.status(404).json({ error: 'Expense not found for user / not authorized' });
+            return res.status(404).json({ error: 'Expense not found' });
         }
-
-        // send updated expense back to client
         res.json(updateExpense.rows[0]);
-
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
-// ============Delete 1 of the user's expenses=============
+// | -------- Delete Expense Entry (DELETE) -------- |
+
 router.delete('/:id', authMiddleware, async (req, res) => {
     try {
-        // get "expense id" from url params
         const { id } = req.params;
-
-        // get user id - same as above
         const userId = req.user.id;
-
-        // delete from database -- must check BOTH expense id and user id
         const deleteExpense = await pool.query(
             "DELETE FROM expenses WHERE expense_id = $1 AND user_id = $2 RETURNING *",
             [id, userId]
         );
-
-        // if no rows were deleted
-        //      - either expense id is wrong or it doesn't belong to this user
         if (deleteExpense.rows.length === 0) {
-            return res.status(404).json({ error: 'Expense not found for user / not authorized' });
+            return res.status(404).json({ error: 'Expense not found' });
         }
-
-        // send success message back to client
         res.json({ message: 'Expense deleted successfully' });
-
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Server error' });
@@ -117,5 +114,5 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 
-// export the router to be used in server.js
+
 module.exports = router;
