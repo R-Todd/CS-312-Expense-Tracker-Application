@@ -1,6 +1,6 @@
 // =========== IMPORTS ===========
 import React, { useState } from 'react';
-// NEW: Import the DatePicker library and CSS
+//  Import the DatePicker library and CSS
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css'; 
 // styling
