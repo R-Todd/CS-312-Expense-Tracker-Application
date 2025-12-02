@@ -19,7 +19,7 @@ const ExpenseSummary = ({ expenses, income, savings }) => {
         return accumulator + parseFloat(currentIncome.amount);
     }, 0); 
     
-    // NEW: Calculate Total Savings Contributions
+    // Calculate Total Savings Contributions
     const totalSavings = savings.reduce((accumulator, currentSavings) => {
         return accumulator + parseFloat(currentSavings.amount);
     }, 0); 
@@ -60,7 +60,7 @@ const ExpenseSummary = ({ expenses, income, savings }) => {
                 <div className="summary-card-value">${totalSpending.toFixed(2)}</div>
             </div>
 
-            {/* NEW CARD: TOTAL SAVINGS CONTRIBUTED */}
+            {/* TOTAL SAVINGS CONTRIBUTED */}
             <div className="summary-card" style={{ flexBasis: '200px' }}>
                 <div className="summary-card-title">Total Savings</div>
                 <div className="summary-card-value" style={{ color: '#FFCE56' }}>${totalSavings.toFixed(2)}</div>

@@ -13,7 +13,7 @@ import {
     Legend 
 } from 'chart.js';
 
-// NEW: Import the centralized color map
+//  Import the centralized color map
 import { CATEGORY_COLORS } from '../utils/colorPalette';
 
 // Register components

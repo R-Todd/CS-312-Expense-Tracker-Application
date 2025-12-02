@@ -11,16 +11,16 @@ import EditExpenseForm from './EditExpenseForm.js';
 import EditIncomeForm from './EditIncomeForm.js';
 // import income form
 import IncomeForm from './incomeForm.js'; 
-// NEW: Import savings forms
+// Import savings forms
 import SavingsForm from './SavingsForm.js';
 import EditSavingsForm from './EditSavingsForm.js';
 // import pi chart
 import ExpensePieChart from './expensePieChart.js';
-// NEW: import bar chart
+//  import bar chart
 import ExpenseBarChart from './ExpenseBarChart.js';
 // expense summary 
 import ExpenseSummary from './expenseSummary.js';
-// NEW: Import Predictions component
+// Import Predictions component
 import Predictions from './predictions.js';
 
 import '../App.css'; 
@@ -32,7 +32,7 @@ const Dashboard = () => {
     const [expenses, setExpenses] = useState([]);
     // store list of income
     const [income, setIncome] = useState([]);
-    // NEW: store list of savings
+    // store list of savings
     const [savings, setSavings] = useState([]);
     // store predictions
     const [predictions, setPredictions] = useState([]);
